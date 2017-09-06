@@ -1,0 +1,9 @@
+host: ldap://some.ldap.host
+binddn: cn=Manager,dc=example,dc=com
+binddn_pass:  # leave blank to prompt for password
+suffix: dc=example,dc=com
+people: People
+group: Group
+uidstart: 10000
+gidstart: 10000
+

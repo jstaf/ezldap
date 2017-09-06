@@ -10,7 +10,7 @@ import getpass
 import ldap
 
 
-def config(path='config.yaml'):
+def config(path='etc/config.yaml'):
     """
     Load LDAP details from config.yaml (or similar)
     """

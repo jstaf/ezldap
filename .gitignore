@@ -1,3 +1,4 @@
-config.yaml
+*.swp
 __pycache__/
 
+etc/config.yaml

@@ -1,0 +1,12 @@
+dn: uid=<user>,ou=<people>,<suffix>
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+cn: <user>
+sn: <user>
+userPassword: <user_password>
+loginShell: /bin/bash
+uidNumber: <uid>
+gidNumber: <gid>
+homeDirectory: /home/<user>
+
