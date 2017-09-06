@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+import argparse
+import ldap
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(description="Creates an LDAP group.")
+    parser.add_argument('group_name', nargs=1, type=str, help='LDAP group name to create.')
+    parser.add_argument('gid', nargs='?', type=str, help='GID of group to create.')
+    argv = parser.parse_args()
+    connection = ldaputils.connect()
+    print(connection)
+
+if __name__ == '__main__':
+    main()
+
