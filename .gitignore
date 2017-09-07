@@ -1,4 +1,7 @@
 *.swp
+*.pyc
 __pycache__/
 
 etc/config.yaml
+test.py
+
