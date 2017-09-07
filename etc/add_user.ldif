@@ -1,12 +1,12 @@
-dn: uid=USER,ou=PEOPLE,dc=SUFFIX
+dn: uid=USERNAME,ou=PEOPLESUFFIX
 objectClass: posixAccount
 objectClass: shadowAccount
 objectClass: inetOrgPerson
-cn: USER
-sn: USER
+cn: USERNAME
+sn: USERNAME
 userPassword: USER_PASSWORD
 loginShell: /bin/bash
 uidNumber: UID
 gidNumber: GID
-homeDirectory: /home/USER
+homeDirectory: /home/USERNAME
 

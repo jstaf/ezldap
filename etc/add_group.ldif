@@ -1,0 +1,4 @@
+dn: cn=GROUPNAME,ou=GROUPSUFFIX
+objectClass: posixGroup
+cn: GROUPNAME
+gidNumber: GID
