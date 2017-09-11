@@ -1,9 +1,10 @@
-host: ldap://some.ldap.host
+# all caps entries are used as replacements for same named ldif values
+# for example "ou=PEOPLESUFFIX" is replaced with "ou=People,dc=example,dc=com"
+host: ldap://somewhere/
 binddn: cn=Manager,dc=example,dc=com
 binddn_pass:  # leave blank to prompt for password
-suffix: dc=example,dc=com
-people: People
-group: Group
+PEOPLESUFFIX: People,dc=example,dc=com
+GROUPSUFFIX: Group,dc=example,dc=com
 uidstart: 10000
 gidstart: 10000
 
