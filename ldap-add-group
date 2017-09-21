@@ -3,9 +3,6 @@
 import sys
 import argparse
 
-import ldap
-import ldap.modlist
-
 import ldaputils
 
 def main():
@@ -20,18 +17,16 @@ def main():
     groupname = argv.group_name[0]
     gid = argv.gid
 
-    try:
-        con = ldaputils.bind()
-        
+    with ldaputils.LDAP() as con:
         # create ldif for use
         vals = ldaputils.get_placeholders(ldaputils.config())
         if gid is None:
-            gid = ldaputils.next_gidn(con)
+            gid = con.next_gidn()
 
         vals['GID'] = gid
         vals['GROUPNAME'] = groupname
         ldif = ldaputils.LDIF('etc/ldap-add-group.ldif')
-        ldif.replace_entries(vals)
+        ldif.unplaceholder(vals)
     
         print('\n# Creating group {} with LDIF:'.format(groupname))
         ldif.write()
@@ -40,12 +35,7 @@ def main():
             print('# no changes performed.')
             sys.exit(0)
 
-        # now make entries 
-        for dn, attrs in ldif.entries.items():
-            con.add_s(dn, ldap.modlist.addModlist(attrs))
-
-    finally:
-        con.unbind_s()
+        con.ldif_add(ldif)
 
 if __name__ == '__main__':
     main()

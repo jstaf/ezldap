@@ -57,7 +57,7 @@ class LDAP(LDAPObject):
 
 
     def __enter__(self):
-        pass  # is this method even necessary?
+        return self
 
 
     def __exit__(self, type_, value, traceback):

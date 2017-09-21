@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import ldap
 import ldaputils
 
 def main():
@@ -10,24 +11,19 @@ def main():
     argv = parser.parse_args()
     key = argv.keyword
 
-    try:
-        con = ldaputils.bind()
-        base_dn = ldaputils.base_dn(con)
-        # retrieves everything... might not work against huge LDAP directories due to paging limits
-        query = con.search_s(base_dn, 2)
+    with ldaputils.LDAP() as con:
+        base_dn = con.base_dn()
+        # retrieves everything... 
+        # might not work against huge LDAP directories due to paging limits
+        query = con.search_s(base_dn, ldap.SCOPE_SUBTREE)
         
         # grab all objects with our search key in the DN
         results = [entry for entry in query if key in entry[0]]
         
         # dump results to ldif
         ldif = ldaputils.LDIF()
-        for dn, attrs in results:
-            ldif.entries[dn] = attrs
-
+        ldif.populate(results)
         ldif.write()
-        
-    finally:
-        con.unbind_s()
 
 
 if __name__ == '__main__':

@@ -36,9 +36,9 @@ class LDIF(ldif.LDIFParser):
             writer.unparse(dn, entry)
 
 
-    def replace_entries(self, replacements):
+    def unplaceholder(self, replacements):
         """
-        Replace placeholder entries with stuff from config file
+        Replace placeholder entries with stuff from config file.
         """
         new_entries = {}
         for dn, entry in self.entries.items():
@@ -50,6 +50,14 @@ class LDIF(ldif.LDIFParser):
 
         # replace with updated dictionary
         self.entries = new_entries
+
+
+    def populate(self, query):
+        """
+        Populate entries from an LDAP query (like LDAP.search_s()).
+        """
+        for dn, attrs in query:
+            self.entries[dn] = attrs
 
 
 def _multi_replace(key, val, replacements):
