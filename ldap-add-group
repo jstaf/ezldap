@@ -1,16 +1,51 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
+
 import ldap
+import ldap.modlist
+
 import ldaputils
 
 def main():
     parser = argparse.ArgumentParser(description="Creates an LDAP group.")
-    parser.add_argument('group_name', nargs=1, type=str, help='LDAP group name to create.')
-    parser.add_argument('gid', nargs='?', type=str, help='GID of group to create.')
+    parser.add_argument('group_name', nargs=1, type=str, 
+            help='LDAP group name to create.')
+    parser.add_argument('gid', nargs='?', type=int, default=None,
+            help='GID number of group to create. If not supplied, uses next available GID number.')
+    parser.add_argument('-n', '--dry-run', default=False, const=True, action='store_const', 
+            help='Do a "dry run" (i.e. just print what actions will be performed without doing anything).')
     argv = parser.parse_args()
-    connection = ldaputils.bind()
-    print(connection)
+    groupname = argv.group_name[0]
+    gid = argv.gid
+
+    try:
+        con = ldaputils.bind()
+        
+        # create ldif for use
+        vals = ldaputils.get_placeholders(ldaputils.config())
+        if gid is None:
+            gid = ldaputils.next_gidn(con)
+
+        vals['GID'] = gid
+        vals['GROUPNAME'] = groupname
+        ldif = ldaputils.LDIF('etc/ldap-add-group.ldif')
+        ldif.replace_entries(vals)
+    
+        print('\n# Creating group {} with LDIF:'.format(groupname))
+        ldif.write()
+
+        if argv.dry_run:
+            print('# no changes performed.')
+            sys.exit(0)
+
+        # now make entries 
+        for dn, attrs in ldif.entries.items():
+            con.add_s(dn, ldap.modlist.addModlist(attrs))
+
+    finally:
+        con.unbind_s()
 
 if __name__ == '__main__':
     main()

@@ -5,6 +5,7 @@ Read and write LDIF files to/from a dict
 import sys
 import re
 import ldif
+import ldap.modlist
 
 class LDIF(ldif.LDIFParser):
     def __init__(self, path=None):
@@ -16,6 +17,10 @@ class LDIF(ldif.LDIFParser):
         if path is not None:
             ldif.LDIFParser.__init__(self, open(path))
             self.parse()
+
+
+    def __str__(self):
+        return str(self.entries)
 
 
     def handle(self, dn, entry):

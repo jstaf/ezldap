@@ -21,6 +21,13 @@ def config(path='etc/config.yaml'):
         return yaml.load(settings)
 
 
+def get_placeholders(conf):
+    """
+    Get all uppercase placeholders from config.
+    """
+    return {k: v for k, v in conf.items() if k == k.upper()}
+
+
 def bind(config=config()):
     """
     A wrapper function to simplify connecting via a pre-existing config.
