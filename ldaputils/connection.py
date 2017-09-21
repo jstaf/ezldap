@@ -1,5 +1,5 @@
 """
-Simplify LDAP connection to a one-liner.
+Bind to an LDAP directory and retrieve misc info/configs.
 """
 
 import os
@@ -55,7 +55,7 @@ def next_uidn(connection):
     """
     Determine the next available uid number in a directory tree.
     """
-    users = connection.search_s(base_dn(connection), 2, '(uid=*)')
+    users = connection.search_s(base_dn(connection), ldap.SCOPE_SUBTREE, '(uid=*)')
     if len(users) == 0:
         return config()['uidstart']
 
@@ -68,7 +68,7 @@ def next_gidn(connection):
     """
     Determine the next available gid number in a directory tree.
     """
-    groups = connection.search_s(base_dn(connection), 2, '(objectClass=posixGroup)')
+    groups = connection.search_s(base_dn(connection), ldap.SCOPE_SUBTREE, '(objectClass=posixGroup)')
     if len(groups) == 0:
         return config()['gidstart']
 
