@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import argparse
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(description='Search entire tree for a DN')
+    parser.add_argument('keyword', nargs=1, type=str, help='Keyword to search DNs by (case-sensitive).')
+    argv = parser.parse_args()
+    key = argv.keyword[0]
+
+    try:
+        con = ldaputils.bind()
+        base_dn = ldaputils.base_dn(con)
+        # retrieves everything... might not work against huge LDAP directories due to paging limits
+        query = con.search_s(base_dn, 2)
+        
+        # grab all objects with our search key in the DN
+        results = [entry for entry in query if key in entry[0]]
+        
+        # dump results to ldif
+        ldif = ldaputils.LDIF()
+        for dn, attrs in results:
+            ldif.entries[dn] = attrs
+
+        ldif.write()
+        
+    finally:
+        con.unbind_s()
+
+
+if __name__ == '__main__':
+    main()
+

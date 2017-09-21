@@ -9,7 +9,7 @@ def main():
     parser.add_argument('group_name', nargs=1, type=str, help='LDAP group name to create.')
     parser.add_argument('gid', nargs='?', type=str, help='GID of group to create.')
     argv = parser.parse_args()
-    connection = ldaputils.connect()
+    connection = ldaputils.bind()
     print(connection)
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 Read and write LDIF files to/from a dict
 """
 
+import sys
 import re
 import ldif
 
@@ -21,7 +22,7 @@ class LDIF(ldif.LDIFParser):
         self.entries[dn] = entry
 
 
-    def write(self, output):
+    def write(self, output=sys.stdout):
         """
         Write self.entries as LDIF file.
         """
