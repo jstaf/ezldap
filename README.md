@@ -15,6 +15,7 @@ Install Python 3.4+ and `pyldap` (`pip install --user pyldap`).
 `config.yaml` is used to define connection credentials and "placeholder" values.
 Any attribute in `config.yaml` with a name in UPPERCASE is a placeholder value.
 You may also add arbitrary placeholders in `config.yaml` to be used later.
+An example config file has been provided for use as a template (`etc/config.yaml.example`).
 
 Required values:
 
