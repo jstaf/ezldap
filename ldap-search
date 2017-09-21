@@ -4,10 +4,11 @@ import argparse
 import ldaputils
 
 def main():
-    parser = argparse.ArgumentParser(description='Search entire tree for a DN')
-    parser.add_argument('keyword', nargs=1, type=str, help='Keyword to search DNs by (case-sensitive).')
+    parser = argparse.ArgumentParser(description='Search LDAP tree for a DN keyword and print resulting LDIF.')
+    parser.add_argument('keyword', nargs='?', type=str, default='', 
+            help='Keyword to search DNs by (case-sensitive). Dumps entire directory if not supplied.')
     argv = parser.parse_args()
-    key = argv.keyword[0]
+    key = argv.keyword
 
     try:
         con = ldaputils.bind()
