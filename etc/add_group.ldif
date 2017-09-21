@@ -1,4 +1,6 @@
 dn: cn=GROUPNAME,ou=GROUPSUFFIX
+objectClass: top
 objectClass: posixGroup
+objectClass: extensibleObject
 cn: GROUPNAME
 gidNumber: GID

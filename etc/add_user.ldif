@@ -1,4 +1,5 @@
 dn: uid=USERNAME,ou=PEOPLESUFFIX
+objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
 objectClass: inetOrgPerson
