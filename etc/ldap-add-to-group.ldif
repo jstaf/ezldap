@@ -1,0 +1,6 @@
+dn: cn=GROUPNAME,ou=GROUPSUFFIX
+changetype: modify
+add: memberUid
+memberUid: USERNAME
+add: member
+member: USERDN

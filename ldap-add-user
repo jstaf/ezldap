@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import ldap
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(description=
+            "Creates an LDAP user and add to a group." 
+            "Creates a same-named LDAP group as well if no group specified.")
+    parser.add_argument('USERNAME', nargs=1, type=str,
+            help="Username to create.")
+    parser.add_argument('GROUPNAME', nargs='?', type=str,
+            help="Groupname to add user to. If omitted, creates same-named LDAP group.")
+    parser.add_argument('-n', '--dry-run', default=False, 
+            const=True, action='store_const')
+    argv = parser.parse_args()
+
+    with ldaputils.LDAP() as con:
+        
+        # parse arguments and get all key values for ldif
+        replace = {}
+        replace['USERNAME'] = argv.USERNAME
+        replace['UID'] = con.next_uidn()
+    
+        group = argv.GROUPNAME
+        create_group = False
+        if group is None:
+            # create a new group
+            create_group = True
+            replace['GROUPNAME'] = replace['USERNAME']
+            replace['GID'] = con.next_gidn()
+        else:
+            # find existing group
+            replace['GROUPNAME'] = group
+            query = con.search_s(con.base_dn(), ldap.SCOPE_SUBTREE,
+                    '(cn={})'.format(group))
+            if len(query) != 1:
+                sys.exit('No matching group found (or multiple groups returned).')
+            else:
+                replace['GID'] = int(ldaputils.get_attrib_list(query, 'gidNumber')[0])
+
+        replace.update(con.get_placeholders())
+
+        # populate "add user" ldif
+        add_user = ldaputils.LDIF('etc/ldap-add-user.ldif')
+        add_user.unplaceholder(replace)
+        add_user.write()
+
+        if create_group:
+            add_group = ldaputils.LDIF('etc/ldap-add-group.ldif')
+            add_group.unplaceholder(replace)
+            add_group.write()
+        else:
+            # modify existing group
+            add_to_group = ldaputils.LDIF('etc/ldap-add-to-group.ldif')
+            add_to_group.unplaceholder(replace)
+            add_to_group.write()
+    
+
+if __name__ == '__main__':
+    main()
+

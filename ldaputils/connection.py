@@ -22,13 +22,6 @@ def config(path='etc/config.yaml'):
         return yaml.load(settings)
 
 
-def get_placeholders(conf):
-    """
-    Get all uppercase placeholders from config.
-    """
-    return {k: v for k, v in conf.items() if k == k.upper()}
-
-
 def get_attrib_list(query, name):
     """
     Grab all of a certain attribute from an LDAP search query.
@@ -77,6 +70,13 @@ class LDAP(LDAPObject):
             bind_password = getpass.getpass()
     
         self.simple_bind_s(self.config['binddn'], bind_password)
+
+
+    def get_placeholders(self):
+        """
+        Get all uppercase placeholders from config.
+        """
+        return {k: v for k, v in self.config.items() if k == k.upper()}
 
 
     def base_dn(self):
