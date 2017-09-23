@@ -114,6 +114,26 @@ class LDAP(LDAPObject):
         return max(gidns) + 1
 
 
+    def get_user(self, user):
+        """
+        Return given user
+        """
+        query = self.search_s(self.config['people'], 
+                              ldap.SCOPE_SUBTREE, 
+                              '(uid={})'.format(user))
+        return query
+
+
+    def get_group(self, group):
+        """
+        Return a given group
+        """
+        query = self.search_s(self.config['group'],
+                              ldap.SCOPE_SUBTREE,
+                              '(cn={})'.format(group))
+        return query
+
+
     def ldif_add(self, ldif):
         """
         Perform an add operation using an LDIF object.
