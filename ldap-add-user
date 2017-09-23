@@ -7,8 +7,9 @@ import ldaputils
 
 def main():
     parser = argparse.ArgumentParser(description=
-            "Creates an LDAP user and add to a group." 
-            "Creates a same-named LDAP group as well if no group specified.")
+            "Creates an LDAP user and add to a group. " 
+            "Creates a same-named LDAP group as well if no group specified."
+            "Prints the randomly generated password to stdout.")
     parser.add_argument('USERNAME', nargs=1, type=str,
             help="Username to create.")
     parser.add_argument('GROUPNAME', nargs='?', type=str,
@@ -21,7 +22,7 @@ def main():
         
         # parse arguments and get all key values for ldif
         replace = {}
-        replace['USERNAME'] = argv.USERNAME
+        replace['USERNAME'] = argv.USERNAME[0]
         replace['UID'] = con.next_uidn()
     
         group = argv.GROUPNAME
@@ -34,29 +35,34 @@ def main():
         else:
             # find existing group
             replace['GROUPNAME'] = group
-            query = con.search_s(con.base_dn(), ldap.SCOPE_SUBTREE,
-                    '(cn={})'.format(group))
+            query = con.get_group(group)
             if len(query) != 1:
-                sys.exit('No matching group found (or multiple groups returned).')
+                sys.exit('No matching group found.')
             else:
                 replace['GID'] = int(ldaputils.get_attrib_list(query, 'gidNumber')[0])
 
         replace.update(con.get_placeholders())
+
+        passwd = ldaputils.random_passwd()
+        print('# Password for {} is: {}'.format(replace['USERNAME'], passwd))
+        replace['USER_PASSWORD'] = ldaputils.ssha_passwd(passwd)
 
         # populate "add user" ldif
         add_user = ldaputils.LDIF('etc/ldap-add-user.ldif')
         add_user.unplaceholder(replace)
         add_user.write()
 
+        replace['USERDN'] = list(add_user.entries.keys())[0]
+
         if create_group:
             add_group = ldaputils.LDIF('etc/ldap-add-group.ldif')
             add_group.unplaceholder(replace)
             add_group.write()
-        else:
-            # modify existing group
-            add_to_group = ldaputils.LDIF('etc/ldap-add-to-group.ldif')
-            add_to_group.unplaceholder(replace)
-            add_to_group.write()
+        
+        # now add user to group
+        add_to_group = ldaputils.LDIF('etc/ldap-add-user-to-group.ldif')
+        add_to_group.unplaceholder(replace)
+        add_to_group.write()
     
 
 if __name__ == '__main__':

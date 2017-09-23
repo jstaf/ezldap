@@ -12,7 +12,7 @@ import hashlib
 import base64
 from random import SystemRandom
 
-def random_pwd(length=10):
+def random_passwd(length=10):
     """
     Generate a readable, random password with no ambiguous characters.
     """

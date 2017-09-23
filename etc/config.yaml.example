@@ -1,10 +1,20 @@
-# all caps entries are used as replacements for same named ldif values
-# for example "ou=PEOPLESUFFIX" is replaced with "ou=People,dc=example,dc=com"
-host: ldap://somewhere/
+##############################################
+# Required values for proper package functionality
+host: ldap://sic152
 binddn: cn=Manager,dc=example,dc=com
 binddn_pass:  # leave blank to prompt for password
-PEOPLESUFFIX: People,dc=example,dc=com
-GROUPSUFFIX: Group,dc=example,dc=com
+people: ou=People,dc=example,dc=com
+group: ou=Group,dc=example,dc=com
 uidstart: 10000
 gidstart: 10000
+
+############################################
+# Placeholder values required for proper script function
+#
+# UPPERCASE values in this file work as replacements
+# for same named ldif values.
+# Example: "ou=PEOPLESUFFIX" is replaced with 
+# "ou=People,dc=example,dc=com"
+PEOPLESUFFIX: People,dc=example,dc=com
+GROUPSUFFIX: Group,dc=example,dc=com
 
