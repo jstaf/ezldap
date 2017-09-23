@@ -7,6 +7,7 @@ import sys
 import yaml
 import getpass
 import re
+from collections import OrderedDict
 
 import ldap
 import ldap.modlist
@@ -140,4 +141,39 @@ class LDAP(LDAPObject):
         """
         for dn, attrs in ldif.entries.items():
             self.add_s(dn, ldap.modlist.addModlist(attrs))
+
+    
+
+    def ldif_modify(self, ldif):
+        """
+        Perform an LDIF modify operation from an LDIF object.
+        """
+        for dn, attrs in ldif.entries.items(): 
+            modlist = _create_modify_modlist(attrs)
+            self.modify_s(dn, modlist)
+
+
+def _create_modify_modlist(attrs):
+    """
+    We need to carefully massage our LDIF object to a 
+    pyldap modlist because the pyldap API is super awkward.
+    """
+    changes = OrderedDict()
+    changes['delete'] = ldap.MOD_DELETE
+    changes['replace'] = ldap.MOD_REPLACE
+    changes['add'] = ldap.MOD_ADD
+    
+    modlist = []
+    for change_type in changes.keys():
+        # skip change types that don't occur
+        if change_type not in attrs.keys():
+            continue
+
+        # else iterate over those values of change type
+        for attrib_name in attrs[change_type]:
+            modlist.append((changes[change_type], 
+                            attrib_name, 
+                            attrs[attrib_name.decode()]))
+
+    return modlist
 

@@ -4,6 +4,7 @@ Read and write LDIF files to/from a dict
 
 import sys
 import re
+import io
 import ldif
 import ldap.modlist
 
@@ -20,7 +21,13 @@ class LDIF(ldif.LDIFParser):
 
 
     def __str__(self):
-        return self.write()
+        # dumps the output of ldif.write() to a string buffer
+        strbuf = io.StringIO()
+        self.write(strbuf)
+        strbuf.seek(0)
+        out = ''.join(strbuf.readlines())
+        strbuf.close()
+        return out
 
 
     def __repr__(self):
