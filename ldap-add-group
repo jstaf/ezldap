@@ -28,11 +28,12 @@ def main():
         ldif = ldaputils.LDIF('etc/ldap-add-group.ldif')
         ldif.unplaceholder(vals)
     
-        print('\n# Creating group {} with LDIF:'.format(groupname))
+        print('\nCreating group {} with LDIF:'.format(groupname), 
+                file=sys.stderr)
         ldif.write()
 
         if argv.dry_run:
-            print('# no changes performed.')
+            print('No changes performed.', file=sys.stderr)
             sys.exit(0)
 
         con.ldif_add(ldif)
