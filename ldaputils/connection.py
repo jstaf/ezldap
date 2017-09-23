@@ -171,9 +171,10 @@ def _create_modify_modlist(attrs):
 
         # else iterate over those values of change type
         for attrib_name in attrs[change_type]:
+            attrib_name = attrib_name.decode()
             modlist.append((changes[change_type], 
                             attrib_name, 
-                            attrs[attrib_name.decode()]))
+                            attrs[attrib_name]))
 
     return modlist
 

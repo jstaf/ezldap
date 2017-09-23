@@ -22,7 +22,7 @@ def main():
 
 
     with ldaputils.LDAP() as con:
-        ldif = ldaputils.LDIF('etc/ldap-add-to-group.ldif')
+        ldif = ldaputils.LDIF('etc/ldap-add-user-to-group.ldif')
         replace = {'USERNAME': user, 'GROUPNAME': group}
 
         # just double checking
@@ -41,7 +41,7 @@ def main():
             print('No changes performed.', file=sys.stderr)
             sys.exit(0)
         else:
-            pass
+            con.ldif_modify(ldif)
 
 
 if __name__ == '__main__':
