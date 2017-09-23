@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import getpass
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(
+            description='Verify that an LDAP password is correct. '
+                        'Currently only works with SSHA-encrypted passwords.')
+    parser.add_argument('USERNAME', nargs='?', type=str, 
+            help='If a username is supplied, this will check that user\'s password. ' 
+            'You will otherwise be prompted for the password hash.')
+    argv = parser.parse_args()
+
+    if argv.USERNAME is None:
+        print('Enter SSHA password hash...')
+        ssha = getpass.getpass()
+    else:
+        with ldaputils.LDAP() as con:
+            query = con.get_user(argv.USERNAME)
+            if len(query) != 1:
+                sys.exit('User not found.')
+
+            ssha = ldaputils.get_attrib_list(query, 'userPassword')[0]
+
+    print('\nEnter password to verify...')
+    passwd = getpass.getpass()
+
+    if ldaputils.ssha_check(ssha, passwd):
+        print('\nPasswords match!')
+    else:
+        print('\nPasswords do not match. :\'(')
+
+
+if __name__ == '__main__':
+    main()
+

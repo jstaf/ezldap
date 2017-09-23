@@ -68,6 +68,7 @@ class LDAP(LDAPObject):
         """
         bind_password = self.config['binddn_pass']
         if bind_password is None:
+            print('Enter bind DN password...', file=sys.stderr)
             bind_password = getpass.getpass()
     
         self.simple_bind_s(self.config['binddn'], bind_password)
