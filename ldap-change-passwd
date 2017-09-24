@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import argparse
+import getpass
+import ldap
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(description='Change or randomize a userpassword.')
+    parser.add_argument('USERNAME', nargs=1, type=str, 
+            help='User to reset password for.')
+    parser.add_argument('-s', '--specify-password', 
+            default=False, const=True, action='store_const',
+            help='Lets you specify a password instead of randomizing it.')
+    argv = parser.parse_args()
+    
+    user = argv.USERNAME[0]
+    if argv.specify_password:
+        print('Specify new password for {}...'.format(user))
+        passwd = getpass.getpass()
+    else:
+        passwd = ldaputils.random_passwd()
+        print('New password for {} - {}'.format(user, passwd))
+
+    ssha = ldaputils.ssha_passwd(passwd).encode()
+    modlist = [(ldap.MOD_REPLACE, 'userPassword', ssha)]
+
+    with ldaputils.LDAP() as con:
+        dn = con.get_user(user)[0][0]
+        con.modify_s(dn, modlist)
+
+    
+if __name__ == '__main__':
+    main()
+
