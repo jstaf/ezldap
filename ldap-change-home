@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import argparse
+import ldap
+import ldaputils
+
+def main():
+    parser = argparse.ArgumentParser(description='Change a user\'s home directory.')
+    parser.add_argument('USERNAME', nargs=1, type=str, 
+            help='User to change homeDirectory for.')
+    parser.add_argument('HOMEDIR', nargs=1, type=str,
+            help='New home directory.')
+    argv = parser.parse_args()
+    
+    user = argv.USERNAME[0]
+    homedir = argv.HOMEDIR[0].encode()
+    modlist = [(ldap.MOD_REPLACE, 'homeDirectory', homedir)]
+
+    with ldaputils.LDAP() as con:
+        dn = con.get_user(user)[0][0]
+        con.modify_s(dn, modlist)
+
+    
+if __name__ == '__main__':
+    main()
+
