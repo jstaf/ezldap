@@ -22,6 +22,8 @@ Required values:
 * **host** - Your LDAP host.
 * **binddn** - DN of your directory manager account.
 * **binddn\_pass** - Password for the directory manager. Leave blank to prompt for passwordwhen connecting to LDAP.
+* **people** - Base DN for your users.
+* **group** - Base DN for your groups.
 * **uidstart** - `uidNumber` to begin making LDAP accounts at (will use highest numbered LDAP `uidNumber` otherwise).
 * **gidstart** - `gidNumber` to begin making LDAP groups at (will use highest numbered LDAP `gidNumber` otherwise).
 

@@ -63,6 +63,14 @@ def main():
         add_to_group = ldaputils.LDIF('etc/ldap-add-user-to-group.ldif')
         add_to_group.unplaceholder(replace)
         add_to_group.write()
+
+        if argv.dry_run:
+            print('No changes performed.', file=sys.stderr)
+        else:
+            # apply changes
+            con.ldif_add(add_user)
+            if create_group:  con.ldif_add(add_group)
+            con.ldif_modify(add_to_group)
     
 
 if __name__ == '__main__':
