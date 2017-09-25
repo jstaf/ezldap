@@ -19,7 +19,7 @@ def main():
 
     with ldaputils.LDAP() as con:
         # create ldif for use
-        vals = ldaputils.get_placeholders(ldaputils.config())
+        vals = con.get_placeholders()
         if gid is None:
             gid = con.next_gidn()
 
