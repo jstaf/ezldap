@@ -17,4 +17,5 @@ gidstart: 10000
 # "ou=People,dc=example,dc=com"
 PEOPLESUFFIX: People,dc=example,dc=com
 GROUPSUFFIX: Group,dc=example,dc=com
+HOMEDIR: /home
 

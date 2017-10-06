@@ -9,5 +9,8 @@ userPassword: USER_PASSWORD
 loginShell: /bin/bash
 uidNumber: UID
 gidNumber: GID
-homeDirectory: /home/USERNAME
+homeDirectory: HOMEDIR/USERNAME
+shadowLastChange: 0
+shadowMax: 180
+shadowWarning: 7
 
