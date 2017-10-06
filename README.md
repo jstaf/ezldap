@@ -8,6 +8,15 @@ common LDAP tasks easier.
 
 Install Python 3.4+ and `pyldap` (`pip install --user pyldap`). 
 
+On Centos 7:
+
+```{bash}
+sudo yum -y install epel-release openldap-devel gcc gcc-g++
+# Python 3.4 is from EPEL
+sudo yum -y install python34 python34-pip python34-devel
+pip3 install --user pyldap
+```
+
 **You must edit the configuration files in `etc/` before use!**
 
 ### etc/config.yaml
