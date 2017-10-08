@@ -10,7 +10,4 @@ loginShell: /bin/bash
 uidNumber: UID
 gidNumber: GID
 homeDirectory: HOMEDIR/USERNAME
-shadowLastChange: 0
-shadowMax: 180
-shadowWarning: 7
 
