@@ -13,12 +13,16 @@ import ldap
 import ldap.modlist
 from ldap.ldapobject import LDAPObject
 
+from .ldif import LDIF
+from .password import ssha_passwd
+
+
 def config(path='etc/config.yaml'):
     """
     Load LDAP details from config.yaml (or similar)
     """
     if not os.path.exists(path):
-        sys.exit('Error: config file ({}), not found!'.format(path))
+        raise IOError('Error: config file ({}), not found!'.format(path))
     with open(path, 'r') as settings:
         return yaml.load(settings)
 
@@ -153,6 +157,90 @@ class LDAP(LDAPObject):
             modlist = _create_modify_modlist(attrs)
             self.modify_s(dn, modlist)
 
+
+    def make_add_group(self, groupname, gid=None, ldif=LDIF('etc/ldap-add-group.ldif')):
+        """
+        Create an LDIF for adding a group from template.
+        Use .ldif_add() to add to directory.
+        """
+        if gid is None:
+            gid = self.next_gidn()
+
+        replace = {
+                'GID': gid, 
+                'GROUPNAME': groupname}
+
+        replace = self.get_placeholders()
+        replace.update(self.get_placeholders())
+        ldif.unplaceholder(replace)
+        return ldif
+
+
+    def make_add_user_to_group(self, username, groupname, userdn=None,
+        ldif=LDIF('etc/ldap-add-user-to-group.ldif')):
+        """
+        Create an LDIF for adding a user to a group.
+        Use .ldif_add() to add to directory.
+        """
+        if userdn is None:
+            userdn = self.get_user(username)[0][0]
+
+        replace = {
+                'USERNAME': username, 
+                'GROUPNAME': groupname,
+                'USERDN': userdn}
+
+        replace.update(self.get_placeholders())
+        ldif.unplaceholder(replace)
+        return ldif
+
+
+    def make_add_user(self, username, password, gid, uid=None, 
+        ldif=LDIF('etc/ldap-add-user.ldif')):
+        """
+        Create an LDIF for adding a user. 
+        If do_group is True, also creates LDIF for
+        creating and adding the user to an eponymously named
+        Use .ldif_add() to add user/group modifications to LDAP directory.
+        """
+        if uid is None:
+            uid = self.next_uidn()
+        
+        replace = {
+            'USERNAME': username,
+            'USER_PASSWORD': ssha_passwd(password),
+            'GID': gid,
+            'UID': uid}
+
+        replace.update(self.get_placeholders())
+        ldif.unplaceholder(replace)
+        return ldif
+
+
+    def make_add_user_wgroup(self, username, password, groupname=None):
+        """
+        Create an LDIF to make a user and add them to their associated group.
+        Creates the eponymously named group if groupname is not supplied.
+        """
+        ldif = LDIF()
+
+        if groupname is None: 
+            groupname = username
+            ldif += self.make_add_group(groupname)
+            gid = int(list(ldif.entries.values())[0]['gidNumber'][0])
+        else:
+            try:
+                gid = int(self.get_group('sas_staff')[0][1]['gidNumber'][0])
+            except IndexError:
+                raise ValueError('Group does not exist')
+
+        add_user = self.make_add_user(username, password, gid)
+        userdn = list(add_user.entries.keys())[0]
+        ldif += add_user
+        ldif += self.make_add_user_to_group(username, groupname, userdn)
+            
+        return ldif
+                
 
 def _create_modify_modlist(attrs):
     """
