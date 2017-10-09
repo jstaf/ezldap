@@ -34,6 +34,18 @@ class LDIF(ldif.LDIFParser):
         return self.__str__()
 
 
+    def __add__(self, ldif):
+        new = LDIF()
+        new.entries.update(self.entries)
+        new.entries.update(ldif.entries)
+        return new
+
+
+    def __iadd__(self, ldif):
+        self.entries.update(ldif.entries)
+        return self
+
+
     def handle(self, dn, entry):
         self.entries[dn] = entry
 
