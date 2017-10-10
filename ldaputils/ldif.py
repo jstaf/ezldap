@@ -58,7 +58,7 @@ class LDIF(ldif.LDIFParser):
         for dn, entry in self.entries.items():
             writer.unparse(dn, entry)
 
-
+        
     def unplaceholder(self, replacements):
         """
         Replace placeholder entries with stuff from config file.

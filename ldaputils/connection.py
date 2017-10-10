@@ -158,89 +158,75 @@ class LDAP(LDAPObject):
             self.modify_s(dn, modlist)
 
 
-    def make_add_group(self, groupname, gid=None, ldif=LDIF('etc/ldap-add-group.ldif')):
+    def add_group(self, groupname, 
+        ldif_path='etc/ldap-add-group.ldif', **kwargs):
         """
-        Create an LDIF for adding a group from template.
-        Use .ldif_add() to add to directory.
+        Adds a group from an LDIF template.
         """
-        if gid is None:
-            gid = self.next_gidn()
-
         replace = {
-                'GID': gid, 
+                'GID': None, 
                 'GROUPNAME': groupname}
-
-        replace = self.get_placeholders()
+        
         replace.update(self.get_placeholders())
+        replace.update(kwargs)
+        if replace['GID'] is None:
+            replace['GID'] = self.next_gidn()
+        
+        ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
         return ldif
 
 
-    def make_add_user_to_group(self, username, groupname, userdn=None,
-        ldif=LDIF('etc/ldap-add-user-to-group.ldif')):
+    def add_user_to_group(self, username, groupname,
+        ldif_path='etc/ldap-add-user-to-group.ldif', **kwargs):
         """
-        Create an LDIF for adding a user to a group.
-        Use .ldif_add() to add to directory.
+        Adds a user to a group.
+        The user and group in question must already exist.
         """
-        if userdn is None:
-            userdn = self.get_user(username)[0][0]
-
         replace = {
                 'USERNAME': username, 
                 'GROUPNAME': groupname,
-                'USERDN': userdn}
+                'USERDN': None}
 
         replace.update(self.get_placeholders())
+        replace.update(kwargs)
+        if replace['USERDN'] is None:
+            try:
+                replace['USERDN'] = self.get_user(username)[0][0]
+            except IndexError:
+                raise ValueError('User does not exist')
+
+        ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
         return ldif
 
 
-    def make_add_user(self, username, password, gid, uid=None, 
-        ldif=LDIF('etc/ldap-add-user.ldif')):
+    def add_user(self, username, groupname, password,  
+        ldif_path='etc/ldap-add-user.ldif', **kwargs):
         """
-        Create an LDIF for adding a user. 
-        If do_group is True, also creates LDIF for
-        creating and adding the user to an eponymously named
-        Use .ldif_add() to add user/group modifications to LDAP directory.
+        Adds a user. Does not create or modify groups.
         """
-        if uid is None:
-            uid = self.next_uidn()
-        
         replace = {
             'USERNAME': username,
             'USER_PASSWORD': ssha_passwd(password),
-            'GID': gid,
-            'UID': uid}
+            'GID': None,
+            'UID': None}
 
         replace.update(self.get_placeholders())
-        ldif.unplaceholder(replace)
-        return ldif
+        replace.update(kwargs)
+        if replace['UID'] is None:
+            replace['UID'] = self.next_uidn()
 
-
-    def make_add_user_wgroup(self, username, password, groupname=None):
-        """
-        Create an LDIF to make a user and add them to their associated group.
-        Creates the eponymously named group if groupname is not supplied.
-        """
-        ldif = LDIF()
-
-        if groupname is None: 
-            groupname = username
-            ldif += self.make_add_group(groupname)
-            gid = int(list(ldif.entries.values())[0]['gidNumber'][0])
-        else:
+        if replace['GID'] is None:
             try:
-                gid = int(self.get_group('sas_staff')[0][1]['gidNumber'][0])
+                replace['GID'] = int(get_attrib_list(self.get_group(groupname), 'gidNumber')[0])
             except IndexError:
                 raise ValueError('Group does not exist')
 
-        add_user = self.make_add_user(username, password, gid)
-        userdn = list(add_user.entries.keys())[0]
-        ldif += add_user
-        ldif += self.make_add_user_to_group(username, groupname, userdn)
-            
+        ldif = LDIF(ldif_path)
+        ldif.unplaceholder(replace)
         return ldif
-                
+
 
 def _create_modify_modlist(attrs):
     """
