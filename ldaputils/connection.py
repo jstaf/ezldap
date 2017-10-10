@@ -174,7 +174,7 @@ class LDAP(LDAPObject):
         
         ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
-        return ldif
+        self.ldif_add(ldif)
 
 
     def add_user_to_group(self, username, groupname,
@@ -198,7 +198,7 @@ class LDAP(LDAPObject):
 
         ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
-        return ldif
+        self.ldif_modify(ldif)
 
 
     def add_user(self, username, groupname, password,  
@@ -225,7 +225,7 @@ class LDAP(LDAPObject):
 
         ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
-        return ldif
+        self.ldif_add(ldif)
 
 
 def _create_modify_modlist(attrs):
