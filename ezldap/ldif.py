@@ -6,7 +6,6 @@ import sys
 import re
 import io
 import ldif
-import ldap.modlist
 
 class LDIF(ldif.LDIFParser):
     def __init__(self, path=None):
@@ -15,6 +14,7 @@ class LDIF(ldif.LDIFParser):
         If path is None, you are expected to populate self.entries.
         """
         self.entries = {}
+        
         if path is not None:
             ldif.LDIFParser.__init__(self, open(path))
             self.parse()
@@ -31,7 +31,7 @@ class LDIF(ldif.LDIFParser):
 
 
     def __repr__(self):
-        return self.__str__()
+        return self.entries
 
 
     def __add__(self, ldif):
@@ -106,5 +106,3 @@ def _multi_replace(key, val, replacements):
         val = str(val).encode()
    
     return val
-
-
