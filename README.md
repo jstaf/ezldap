@@ -3,10 +3,16 @@ ezldap
 
 An object-oriented Python LDAP API and set of bundled scripts to make
 common LDAP tasks easier.
+The focus of this package is autodetection of as many ldap config values
+as possible, making a complex task like generating an LDIF and adding a
+user as simple as `ldap-add-user <username>` 
 
 ## Installation
 
-Install Python 3.4+ and `python-ldap` (`pip install --user python-ldap`). 
+Install Python 3.4+ and the development branch of `python-ldap` 
+(`pip install --user git+https://github.com/python-ldap/python-ldap.git`).
+The current Github copy of `python-ldap` supports Python 3, 
+while the PyPI copy does not. 
 
 On Centos 7:
 
@@ -14,7 +20,7 @@ On Centos 7:
 sudo yum -y install epel-release openldap-devel gcc gcc-g++
 # Python 3.4 is from EPEL
 sudo yum -y install python34 python34-pip python34-devel
-pip3 install --user python-ldap
+pip3 install --user git+https://github.com/python-ldap/python-ldap.git
 ```
 
 **You must edit the configuration files in `etc/` before use!**
