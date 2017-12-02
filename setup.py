@@ -1,4 +1,5 @@
 from setuptools import setup
+from glob import glob
 
 setup(
     name='ezldap',
@@ -9,10 +10,9 @@ setup(
     author_email='jeff.stafford@queensu.ca',
     license='BSD3',
     packages=['ezldap'],
-    scripts=['scripts/*'],
-    dependency_links=['https://github.com/python-ldap/python-ldap.git'],
+    scripts=glob('bin/*'),
     install_requires=[
         'PyYAML',
-        'python-ldap'
+        'pyldap'  # python-ldap once v3.0 of python-ldap is available
     ]
 )
