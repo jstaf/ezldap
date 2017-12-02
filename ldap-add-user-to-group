@@ -3,7 +3,6 @@
 import sys
 import argparse
 import ezldap
-import ldap
 
 def main():
     parser = argparse.ArgumentParser(

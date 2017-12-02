@@ -2,7 +2,6 @@
 
 import sys
 import argparse
-import ldap
 import ezldap
 
 def main():
@@ -69,7 +68,9 @@ def main():
         else:
             # apply changes
             con.ldif_add(add_user)
-            if create_group:  con.ldif_add(add_group)
+            if create_group:  
+                con.ldif_add(add_group)
+
             con.ldif_modify(add_to_group)
     
 
