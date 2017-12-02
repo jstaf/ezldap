@@ -8,5 +8,11 @@ setup(
     author='Jeff Stafford',
     author_email='jeff.stafford@queensu.ca',
     license='BSD3',
-    packages=['ezldap']
+    packages=['ezldap'],
+    scripts=['scripts/*'],
+    dependency_links=['https://github.com/python-ldap/python-ldap.git'],
+    install_requires=[
+        'PyYAML',
+        'python-ldap'
+    ]
 )
