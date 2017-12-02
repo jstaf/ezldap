@@ -1,8 +1,10 @@
-*.swp
-*.pyc
 __pycache__/
 .vscode/
 .cache/
+*.egg-info/
+
+*.swp
+*.pyc
 
 etc/*.txt
 etc/config.yaml
