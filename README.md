@@ -1,4 +1,4 @@
-ldaputils
+ezldap
 ---------------------------------------------
 
 An object-oriented Python LDAP API and set of bundled scripts to make
@@ -6,7 +6,7 @@ common LDAP tasks easier.
 
 ## Installation
 
-Install Python 3.4+ and `pyldap` (`pip install --user pyldap`). 
+Install Python 3.4+ and `python-ldap` (`pip install --user python-ldap`). 
 
 On Centos 7:
 
@@ -14,7 +14,7 @@ On Centos 7:
 sudo yum -y install epel-release openldap-devel gcc gcc-g++
 # Python 3.4 is from EPEL
 sudo yum -y install python34 python34-pip python34-devel
-pip3 install --user pyldap
+pip3 install --user python-ldap
 ```
 
 **You must edit the configuration files in `etc/` before use!**
@@ -42,7 +42,7 @@ These are the LDIF files used by this package's scripts to
 add/delete/modify LDAP entries.
 Values in UPPERCASE will be automatically replaced by 
 the UPPERCASE placeholder values in `config.yaml`.
-You can edit these files to customize the behavior of ldaputils' scripts.
+You can edit these files to customize the behavior of ezldap' scripts.
 
 ## Using this package
 
@@ -54,4 +54,3 @@ All scripts print the LDIF of their retrieved data/changes to stdout
 
 Keep in mind this package is under active development and may not be appropriate for all use cases.
 Use at your own risk!
-

@@ -3,7 +3,7 @@
 import sys
 import argparse
 import getpass
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(
@@ -18,17 +18,17 @@ def main():
         print('Enter SSHA password hash...')
         ssha = getpass.getpass()
     else:
-        with ldaputils.LDAP() as con:
+        with ezldap.LDAP() as con:
             query = con.get_user(argv.USERNAME)
             if len(query) != 1:
                 sys.exit('User not found.')
 
-            ssha = ldaputils.get_attrib_list(query, 'userPassword')[0]
+            ssha = ezldap.get_attrib_list(query, 'userPassword')[0]
 
     print('\nEnter password to verify...')
     passwd = getpass.getpass()
 
-    if ldaputils.ssha_check(ssha, passwd):
+    if ezldap.ssha_check(ssha, passwd):
         print('\nPasswords match!')
     else:
         print('\nPasswords do not match. :\'(')
@@ -36,4 +36,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

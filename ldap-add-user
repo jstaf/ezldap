@@ -3,7 +3,7 @@
 import sys
 import argparse
 import ldap
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description=
@@ -18,7 +18,7 @@ def main():
             const=True, action='store_const')
     argv = parser.parse_args()
 
-    with ldaputils.LDAP() as con:
+    with ezldap.LDAP() as con:
         
         # parse arguments and get all key values for ldif
         replace = {}
@@ -39,28 +39,28 @@ def main():
             if len(query) != 1:
                 sys.exit('No matching group found.')
             else:
-                replace['GID'] = int(ldaputils.get_attrib_list(query, 'gidNumber')[0])
+                replace['GID'] = int(ezldap.get_attrib_list(query, 'gidNumber')[0])
 
         replace.update(con.get_placeholders())
 
-        passwd = ldaputils.random_passwd()
+        passwd = ezldap.random_passwd()
         print('# Password for {} is: {}'.format(replace['USERNAME'], passwd))
-        replace['USER_PASSWORD'] = ldaputils.ssha_passwd(passwd)
+        replace['USER_PASSWORD'] = ezldap.ssha_passwd(passwd)
 
         # populate "add user" ldif
-        add_user = ldaputils.LDIF('etc/ldap-add-user.ldif')
+        add_user = ezldap.LDIF('etc/ldap-add-user.ldif')
         add_user.unplaceholder(replace)
         add_user.write()
 
         replace['USERDN'] = list(add_user.entries.keys())[0]
 
         if create_group:
-            add_group = ldaputils.LDIF('etc/ldap-add-group.ldif')
+            add_group = ezldap.LDIF('etc/ldap-add-group.ldif')
             add_group.unplaceholder(replace)
             add_group.write()
         
         # now add user to group
-        add_to_group = ldaputils.LDIF('etc/ldap-add-user-to-group.ldif')
+        add_to_group = ezldap.LDIF('etc/ldap-add-user-to-group.ldif')
         add_to_group.unplaceholder(replace)
         add_to_group.write()
 

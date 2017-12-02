@@ -2,7 +2,7 @@
 
 import argparse
 import ldap
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description='Change a user\'s home directory.')
@@ -16,7 +16,7 @@ def main():
     homedir = argv.HOMEDIR[0].encode()
     modlist = [(ldap.MOD_REPLACE, 'homeDirectory', homedir)]
 
-    with ldaputils.LDAP() as con:
+    with ezldap.LDAP() as con:
         dn = con.get_user(user)[0][0]
         con.modify_s(dn, modlist)
 

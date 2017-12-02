@@ -2,7 +2,7 @@
 
 import argparse
 import ldap
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description='Search LDAP tree for a DN keyword and print resulting LDIF.')
@@ -11,7 +11,7 @@ def main():
     argv = parser.parse_args()
     key = argv.keyword
 
-    with ldaputils.LDAP() as con:
+    with ezldap.LDAP() as con:
         base_dn = con.base_dn()
         # retrieves everything... 
         # might not work against huge LDAP directories due to paging limits
@@ -21,7 +21,7 @@ def main():
         results = [entry for entry in query if key in entry[0]]
         
         # dump results to ldif
-        ldif = ldaputils.LDIF()
+        ldif = ezldap.LDIF()
         ldif.populate(results)
         ldif.write()
 

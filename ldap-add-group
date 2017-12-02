@@ -3,7 +3,7 @@
 import sys
 import argparse
 
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description="Creates an LDAP group.")
@@ -17,7 +17,7 @@ def main():
     groupname = argv.group_name[0]
     gid = argv.gid
 
-    with ldaputils.LDAP() as con:
+    with ezldap.LDAP() as con:
         # create ldif for use
         vals = con.get_placeholders()
         if gid is None:
@@ -25,7 +25,7 @@ def main():
 
         vals['GID'] = gid
         vals['GROUPNAME'] = groupname
-        ldif = ldaputils.LDIF('etc/ldap-add-group.ldif')
+        ldif = ezldap.LDIF('etc/ldap-add-group.ldif')
         ldif.unplaceholder(vals)
     
         print('\nCreating group {} with LDIF:'.format(groupname), 
@@ -40,4 +40,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

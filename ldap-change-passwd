@@ -3,7 +3,7 @@
 import argparse
 import getpass
 import ldap
-import ldaputils
+import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description='Change or randomize a userpassword.')
@@ -19,17 +19,16 @@ def main():
         print('Specify new password for {}...'.format(user))
         passwd = getpass.getpass()
     else:
-        passwd = ldaputils.random_passwd()
+        passwd = ezldap.random_passwd()
         print('New password for {} - {}'.format(user, passwd))
 
-    ssha = ldaputils.ssha_passwd(passwd).encode()
+    ssha = ezldap.ssha_passwd(passwd).encode()
     modlist = [(ldap.MOD_REPLACE, 'userPassword', ssha)]
 
-    with ldaputils.LDAP() as con:
+    with ezldap.LDAP() as con:
         dn = con.get_user(user)[0][0]
         con.modify_s(dn, modlist)
 
     
 if __name__ == '__main__':
     main()
-

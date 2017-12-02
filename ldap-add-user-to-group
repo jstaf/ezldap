@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-import ldaputils
+import ezldap
 import ldap
 
 def main():
@@ -21,8 +21,8 @@ def main():
     group = argv.GROUPNAME[0]
 
 
-    with ldaputils.LDAP() as con:
-        ldif = ldaputils.LDIF('etc/ldap-add-user-to-group.ldif')
+    with ezldap.LDAP() as con:
+        ldif = ezldap.LDIF('etc/ldap-add-user-to-group.ldif')
         replace = {'USERNAME': user, 'GROUPNAME': group}
 
         # just double checking
@@ -46,4 +46,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
