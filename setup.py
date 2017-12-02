@@ -11,6 +11,7 @@ setup(
     license='BSD3',
     packages=['ezldap'],
     scripts=glob('bin/*'),
+    include_package_data=True,
     install_requires=[
         'PyYAML',
         'pyldap'  # python-ldap once v3.0 of python-ldap is available
