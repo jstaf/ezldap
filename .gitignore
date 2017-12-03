@@ -3,6 +3,7 @@ __pycache__/
 .cache/
 *.egg-info/
 .eggs/
+python-ldap-test-*/
 
 *.swp
 *.pyc
