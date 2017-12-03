@@ -5,9 +5,11 @@ Read and write LDIF files to/from a dict
 import sys
 import re
 import io
-import ldif
+from string import Template
 
-class LDIF(ldif.LDIFParser):
+import ldif as ldif_
+
+class LDIF(ldif_.LDIFParser):
     def __init__(self, path=None):
         """
         Create a new LDIF reader. 
@@ -16,7 +18,7 @@ class LDIF(ldif.LDIFParser):
         self.entries = {}
         
         if path is not None:
-            ldif.LDIFParser.__init__(self, open(path))
+            ldif_.LDIFParser.__init__(self, open(path))
             self.parse()
 
 
