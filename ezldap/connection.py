@@ -2,9 +2,7 @@
 Bind to an LDAP directory and perform various operations.
 """
 
-import os
 import sys
-import yaml
 import getpass
 import re
 from collections import OrderedDict
@@ -15,16 +13,7 @@ from ldap.ldapobject import LDAPObject
 
 from .ldif import LDIF
 from .password import ssha_passwd
-
-
-def config(path='etc/config.yaml'):
-    """
-    Load LDAP details from config.yaml (or similar)
-    """
-    if not os.path.exists(path):
-        raise IOError('Error: config file ({}), not found!'.format(path))
-    with open(path, 'r') as settings:
-        return yaml.load(settings)
+from .config import config
 
 
 def get_attrib_list(query, name):
@@ -255,4 +244,3 @@ def _create_modify_modlist(attrs):
                             attrs[attrib_name]))
 
     return modlist
-
