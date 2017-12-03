@@ -1,13 +1,12 @@
-dn: uid=USERNAME,ou=PEOPLESUFFIX
+dn: uid=$username,$peopledn
 objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
 objectClass: inetOrgPerson
-cn: USERNAME
-sn: USERNAME
-userPassword: USER_PASSWORD
+cn: $username
+sn: $username 
+userPassword: $user_password
 loginShell: /bin/bash
-uidNumber: UID
-gidNumber: GID
-homeDirectory: HOMEDIR/USERNAME
-
+uidNumber: $uid
+gidNumber: $gid 
+homeDirectory: $homedir/$username

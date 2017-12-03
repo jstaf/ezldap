@@ -1,6 +1,6 @@
-dn: cn=GROUPNAME,ou=GROUPSUFFIX
+dn: cn=$groupname,$groupdn
 objectClass: top
 objectClass: posixGroup
 objectClass: extensibleObject
-cn: GROUPNAME
-gidNumber: GID
+cn: $groupname
+gidNumber: $gid

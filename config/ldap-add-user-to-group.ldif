@@ -1,6 +1,6 @@
-dn: cn=GROUPNAME,ou=GROUPSUFFIX
+dn: cn=$groupname,$groupdn
 changetype: modify
 add: memberUid
-memberUid: USERNAME
+memberUid: $username
 add: member
-member: USERDN
+member: $userdn

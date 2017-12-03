@@ -1,21 +1,12 @@
-##############################################
-# Required values for proper package functionality
-host: ldap://sic152
+###########################################################
+# Required values for proper package functionality.
+# Additional values can be added here to used in LDIF
+# templates as desired.
+host: ldap://localhost
 binddn: cn=Manager,dc=example,dc=com
 binddn_pass:  # leave blank to prompt for password
-people: ou=People,dc=example,dc=com
-group: ou=Group,dc=example,dc=com
+peopledn: ou=People,dc=example,dc=com
+groupdn: ou=Group,dc=example,dc=com
 uidstart: 10000
 gidstart: 10000
-
-############################################
-# Placeholder values required for proper script function
-#
-# UPPERCASE values in this file work as replacements
-# for same named ldif values.
-# Example: "ou=PEOPLESUFFIX" is replaced with 
-# "ou=People,dc=example,dc=com"
-PEOPLESUFFIX: People,dc=example,dc=com
-GROUPSUFFIX: Group,dc=example,dc=com
-HOMEDIR: /home
-
+homedir: /home
