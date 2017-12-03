@@ -45,12 +45,15 @@ class LDAP(LDAPObject):
     Used to make pyldap's LDAPObject even easier to use.
     """
 
-    def __init__(self, config=config()):
+    def __init__(self, config_vals=None):
         """
         Create a new connection and bind.
         """
-        self.config = config
-        super().__init__(config['host'], trace_file=sys.stdout, trace_stack_limit=None)
+        if config_vals is None:
+            config_vals = config()
+
+        self.config = config_vals
+        super().__init__(self.config['host'], trace_file=sys.stdout, trace_stack_limit=None)
         self._bind()
 
 
