@@ -1,6 +1,6 @@
 ###########################################################
 # Required values for proper package functionality.
-# Additional values can be added here to used in LDIF
+# Additional values can be added here to be used in LDIF
 # templates as desired.
 host: ldap://localhost
 binddn: cn=Manager,dc=example,dc=com
