@@ -5,9 +5,7 @@ A module with several utils for sending mass emails
 
 import smtplib
 from email.mime.text import MIMEText
-
-from .connection import config
-from .ldif import _multi_replace
+from string import Template
 
 def email(message, subject, from_addr, to_addr, relay):
     msg = MIMEText(message)
@@ -21,10 +19,5 @@ def email(message, subject, from_addr, to_addr, relay):
 
 
 def message_from_template(path, replacements):
-    with open(path) as f:
-        message = f.readlines()
-        message = ''.join(message)
-
-    return _multi_replace('_unused', message, replacements)
-
-
+    message = Template(open(path).read())
+    return message.substitute(replacements)
