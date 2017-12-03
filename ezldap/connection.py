@@ -116,7 +116,7 @@ class LDAP(LDAPObject):
         """
         Return given user
         """
-        query = self.search_s(self.config['people'], 
+        query = self.search_s(self.config['peopledn'], 
                               ldap.SCOPE_SUBTREE, 
                               '(uid={})'.format(user))
         return query
@@ -126,7 +126,7 @@ class LDAP(LDAPObject):
         """
         Return a given group
         """
-        query = self.search_s(self.config['group'],
+        query = self.search_s(self.config['groupdn'],
                               ldap.SCOPE_SUBTREE,
                               '(cn={})'.format(group))
         return query
@@ -151,18 +151,18 @@ class LDAP(LDAPObject):
 
 
     def add_group(self, groupname, 
-        ldif_path='etc/ldap-add-group.ldif', **kwargs):
+        ldif_path='config/ldap-add-group.ldif', **kwargs):
         """
         Adds a group from an LDIF template.
         """
         replace = {
-                'GID': None, 
-                'GROUPNAME': groupname}
+                'gid': None, 
+                'groupname': groupname}
         
         replace.update(self.get_placeholders())
         replace.update(kwargs)
-        if replace['GID'] is None:
-            replace['GID'] = self.next_gidn()
+        if replace['gid'] is None:
+            replace['gid'] = self.next_gidn()
         
         ldif = LDIF(ldif_path)
         ldif.unplaceholder(replace)
@@ -170,21 +170,21 @@ class LDAP(LDAPObject):
 
 
     def add_user_to_group(self, username, groupname,
-        ldif_path='etc/ldap-add-user-to-group.ldif', **kwargs):
+        ldif_path='config/ldap-add-user-to-group.ldif', **kwargs):
         """
         Adds a user to a group.
         The user and group in question must already exist.
         """
         replace = {
-                'USERNAME': username, 
-                'GROUPNAME': groupname,
-                'USERDN': None}
+                'username': username, 
+                'groupname': groupname,
+                'userdn': None}
 
         replace.update(self.get_placeholders())
         replace.update(kwargs)
-        if replace['USERDN'] is None:
+        if replace['userdn'] is None:
             try:
-                replace['USERDN'] = self.get_user(username)[0][0]
+                replace['userdn'] = self.get_user(username)[0][0]
             except IndexError:
                 raise ValueError('User does not exist')
 
@@ -194,24 +194,24 @@ class LDAP(LDAPObject):
 
 
     def add_user(self, username, groupname, password,  
-        ldif_path='etc/ldap-add-user.ldif', **kwargs):
+        ldif_path='config/ldap-add-user.ldif', **kwargs):
         """
         Adds a user. Does not create or modify groups.
         """
         replace = {
-            'USERNAME': username,
-            'USER_PASSWORD': ssha_passwd(password),
-            'GID': None,
-            'UID': None}
+            'username': username,
+            'user_password': ssha_passwd(password),
+            'gid': None,
+            'uid': None}
 
         replace.update(self.get_placeholders())
         replace.update(kwargs)
-        if replace['UID'] is None:
-            replace['UID'] = self.next_uidn()
+        if replace['uid'] is None:
+            replace['uid'] = self.next_uidn()
 
-        if replace['GID'] is None:
+        if replace['gid'] is None:
             try:
-                replace['GID'] = int(get_attrib_list(self.get_group(groupname), 'gidNumber')[0])
+                replace['gid'] = int(get_attrib_list(self.get_group(groupname), 'gidNumber')[0])
             except IndexError:
                 raise ValueError('Group does not exist')
 
