@@ -5,6 +5,7 @@ Read and write LDIF files to/from a dict
 import sys
 import io
 from string import Template
+from collections import OrderedDict
 
 import ldif as ldif_
 
@@ -15,7 +16,7 @@ class LDIF(ldif_.LDIFParser):
         Create a new LDIF reader. 
         If path is None, you are expected to populate self.entries.
         """
-        self.entries = {}
+        self.entries = OrderedDict()
         
         if path is not None:
             template = Template(open(path).read())
