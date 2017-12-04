@@ -13,7 +13,7 @@ from ldap.ldapobject import LDAPObject
 
 from .ldif import LDIF
 from .password import ssha_passwd
-from .config import config
+import .config
 
 
 def get_attrib_list(query, name):
@@ -28,22 +28,34 @@ def get_attrib_list(query, name):
     return attrs
 
 
+def ldap_autobind():
+    '''
+    Automatically detects LDAP config values and binds.
+    Binds as Manager if run as root.
+    '''
+    host = config.get_ldap_host()
+    binddn = config.get_binddn()
+    return LDAP(host, binddn)
+
+
 class LDAP(LDAPObject):
-    """
+    ''' 
     An object-oriented wrapper around an LDAP connection.
     Used to make pyldap's LDAPObject even easier to use.
-    """
+    To automatically create a binding use ldap_autobind()
+    '''
 
-    def __init__(self, config_vals=None):
-        """
+    def __init__(self, host, binddn, bindpw=None):
+        ''' 
         Create a new connection and bind.
-        """
-        if config_vals is None:
-            config_vals = config()
+        '''
+        super().__init__(host, trace_file=sys.stdout, trace_stack_limit=None)
+        
+        if bindpw is None:
+            print('Enter bind DN password...', file=sys.stderr)
+            bindpw = getpass.getpass()
 
-        self.config = config_vals
-        super().__init__(self.config['host'], trace_file=sys.stdout, trace_stack_limit=None)
-        self._bind()
+        self.simple_bind_s(binddn, bindpw)
 
 
     def __enter__(self):
@@ -56,19 +68,6 @@ class LDAP(LDAPObject):
         """
         self.unbind_s()
     
-
-    def _bind(self):
-        """
-        A wrapper function to simplify connecting via a pre-existing config.
-        Remember to unbind (con.unbind_s()) when done.
-        """
-        bind_password = self.config['binddn_pass']
-        if bind_password is None:
-            print('Enter bind DN password...', file=sys.stderr)
-            bind_password = getpass.getpass()
-    
-        self.simple_bind_s(self.config['binddn'], bind_password)
-
 
     def get_placeholders(self):
         """
@@ -138,7 +137,6 @@ class LDAP(LDAPObject):
         """
         for dn, attrs in ldif.entries.items():
             self.add_s(dn, ldap.modlist.addModlist(attrs))
-
     
 
     def ldif_modify(self, ldif):
