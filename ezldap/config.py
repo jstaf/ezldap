@@ -4,7 +4,6 @@ Ideally the user should have to do nothing aside from specify a password.
 '''
 
 import os
-import re
 import subprocess
 
 import yaml
@@ -15,8 +14,8 @@ def config():
     the following config files, in order:
     ~/.ezldap.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
     '''
-    if os.path.exists('~/.ezldap/config.yml'):
-        return yaml.load(open('~/.ezldap/config.yml'))
+    if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
+        return yaml.load(open(os.path.expanduser('~/.ezldap/config.yml')))
     else:
         return guess_config()
 
