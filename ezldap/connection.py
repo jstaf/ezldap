@@ -1,6 +1,6 @@
-"""
+'''
 Bind to an LDAP directory and perform various operations.
-"""
+'''
 
 import sys
 import getpass
@@ -13,7 +13,7 @@ from ldap.ldapobject import LDAPObject
 
 from .ldif import LDIF
 from .password import ssha_passwd
-import .config
+from .config import config
 
 
 def get_attrib_list(query, name):
@@ -28,34 +28,40 @@ def get_attrib_list(query, name):
     return attrs
 
 
-def ldap_autobind():
+def ldap_auto_bind(conf=None):
     '''
-    Automatically detects LDAP config values and binds.
-    Binds as Manager if run as root.
+    Automatically detects LDAP config values and returns a directory binding.
     '''
-    host = config.get_ldap_host()
-    binddn = config.get_binddn()
-    return LDAP(host, binddn)
+    if conf is None:
+        conf = config()
+
+    binding = LDAP(conf['host'], conf['binddn'], conf['bindpw'])
+    binding.peopledn = conf['peopledn']
+    binding.groupdn = conf['groupdn']
+    return binding
 
 
 class LDAP(LDAPObject):
     ''' 
     An object-oriented wrapper around an LDAP connection.
     Used to make pyldap's LDAPObject even easier to use.
-    To automatically create a binding use ldap_autobind()
+    To automatically create a binding use ldap_auto_bind().
     '''
 
     def __init__(self, host, binddn, bindpw=None):
         ''' 
         Create a new connection and bind.
         '''
-        super().__init__(host, trace_file=sys.stdout, trace_stack_limit=None)
+        super().__init__(host, trace_file=sys.stderr, trace_stack_limit=None)
         
         if bindpw is None:
             print('Enter bind DN password...', file=sys.stderr)
             bindpw = getpass.getpass()
 
         self.simple_bind_s(binddn, bindpw)
+        #TODO figure out how to grab these
+        self.peopledn = None
+        self.groupdn = None
 
 
     def __enter__(self):
@@ -69,13 +75,6 @@ class LDAP(LDAPObject):
         self.unbind_s()
     
 
-    def get_placeholders(self):
-        """
-        Get all uppercase placeholders from config.
-        """
-        return {k: v for k, v in self.config.items() if k == k.upper()}
-
-
     def base_dn(self):
         """
         Detect the base DN from an LDAP connection.
@@ -85,47 +84,47 @@ class LDAP(LDAPObject):
         return re.findall(r'dc=.+$', whoami)[0]
 
 
-    def next_uidn(self):
+    def next_uidn(self, uidstart=10000):
         """
         Determine the next available uid number in a directory tree.
         """
         users = self.search_s(self.base_dn(), ldap.SCOPE_SUBTREE, '(uid=*)')
         if len(users) == 0:
-            return self.config['uidstart']
+            return uidstart
     
         uidns = get_attrib_list(users, 'uidNumber')
         uidns = [int(uidn) for uidn in uidns]
         return max(uidns) + 1
 
 
-    def next_gidn(self):
+    def next_gidn(self, gidstart=10000):
         """
         Determine the next available gid number in a directory tree.
         """
         groups = self.search_s(self.base_dn(), ldap.SCOPE_SUBTREE, '(objectClass=posixGroup)')
         if len(groups) == 0:
-            return self.config['gidstart']
+            return gidstart
     
         gidns = get_attrib_list(groups, 'gidNumber')
         gidns = [int(gidn) for gidn in gidns]
         return max(gidns) + 1
 
 
-    def get_user(self, user):
-        """
+    def get_user(self, user, peopledn):
+        '''
         Return given user
-        """
-        query = self.search_s(self.config['peopledn'], 
+        '''
+        query = self.search_s(peopledn, 
                               ldap.SCOPE_SUBTREE, 
                               '(uid={})'.format(user))
         return query
 
 
-    def get_group(self, group):
-        """
+    def get_group(self, group, groupdn):
+        '''
         Return a given group
-        """
-        query = self.search_s(self.config['groupdn'],
+        '''
+        query = self.search_s(groupdn,
                               ldap.SCOPE_SUBTREE,
                               '(cn={})'.format(group))
         return query

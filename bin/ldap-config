@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import argparse
+from collections import OrderedDict
+
+import yaml
+import ezldap
+
+def main():
+    parser = argparse.ArgumentParser(description=
+        'Create a set of configs for ezldap scripts under ~/.ezldap/.'
+        'To delete your ezldap config, just delete the ~/.ezldap folder.')
+    argv = parser.parse_args()
+
+    if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
+        conf = ezldap.config()
+    else:
+        conf = ezldap.guess_config()
+    
+    prompts = {
+        'host': 'LDAP host',
+        'binddn': 'Bind DN',
+        'bindpw': 'Bind password (leave blank to prompt for password)',
+        'peopledn': 'User base dn',
+        'groupdn': 'Group base dn',
+        'uidstart': 'UID to start users at',
+        'gidstart': 'GID to start groups at'
+    }
+
+
+    for k, v in prompts.items():
+        conf[k] = interactive_conf(v, conf[k])
+
+    os.makedirs(os.path.expanduser('~/.ezldap'), mode=0o700, exist_ok=True)
+    yaml.dump(conf, 
+        stream=open(os.path.expanduser('~/.ezldap/config.yml'), 'w'),
+        default_flow_style=False)
+
+
+def interactive_conf(prompt, default=None):
+    '''
+    Prompt the user for a config value, press ENTER for default val.
+    '''
+    if default is None:
+        val = input('{}: '.format(prompt))
+    else:
+        val = input('{} [{}]: '.format(prompt, default))
+    
+    if val == '':
+        return default
+    else:
+        return val
+
+
+if __name__ == '__main__':
+    main()
