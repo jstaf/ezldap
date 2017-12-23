@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import shutil
 import argparse
 import pkg_resources
 
@@ -41,7 +40,7 @@ def main():
         default_flow_style=False)
 
     for template in pkg_resources.resource_listdir('ezldap', 'templates'):
-        if not os.path.exists(os.path.expanduser('~/.ezldap/' + template)):
+        if argv.force or not os.path.exists(os.path.expanduser('~/.ezldap/' + template)):
             content = pkg_resources.resource_string('ezldap', 'templates/' + template).decode()
             with open(os.path.expanduser('~/.ezldap/' + template), 'w') as fout:
                 fout.write(content)
