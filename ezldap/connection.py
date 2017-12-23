@@ -80,12 +80,23 @@ class LDAP(LDAPObject):
         whoami = self.whoami_s()
         return re.findall(r'dc=.+$', whoami)[0]
 
+    
+    def search_safe(self, basedn, search_filter, scope=ldap.SCOPE_SUBTREE):
+        '''
+        A wrapper around search_s that returns empty lists instead of exceptions
+        when no results are found.
+        '''
+        try:
+            return self.search_s(basedn, scope, search_filter)
+        except ldap.NO_SUCH_OBJECT:
+            return []
+
 
     def next_uidn(self, uidstart=10000):
         """
         Determine the next available uid number in a directory tree.
         """
-        users = self.search_s(self.base_dn(), ldap.SCOPE_SUBTREE, '(uid=*)')
+        users = self.search_safe(self.base_dn(), '(uid=*)')
         if len(users) == 0:
             return uidstart
     
@@ -98,7 +109,7 @@ class LDAP(LDAPObject):
         """
         Determine the next available gid number in a directory tree.
         """
-        groups = self.search_s(self.base_dn(), ldap.SCOPE_SUBTREE, '(objectClass=posixGroup)')
+        groups = self.search_safe(self.base_dn(), '(objectClass=posixGroup)')
         if len(groups) == 0:
             return gidstart
     
