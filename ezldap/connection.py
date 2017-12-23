@@ -42,7 +42,11 @@ def auto_bind(conf=None):
         conf['bindpw'] = getpass.getpass()
 
     binding.simple_bind_s(conf['binddn'], conf['bindpw'])
-    binding.start_tls_s()
+    try:
+        binding.start_tls_s()
+    except ldap.PROTOCOL_ERROR:
+        print('Warning: LDAP over TLS appears to be unsupported, binding anyways.', file=sys.stderr)
+
     return binding
 
 

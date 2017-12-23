@@ -7,9 +7,6 @@ import slapdtest
 
 import ezldap
 
-con = None
-binddn = None
-
 @pytest.fixture(scope='module')
 def slapd():
     instance = slapdtest.SlapdObject()
@@ -22,7 +19,7 @@ def slapd():
     config = {
         'host': instance.ldap_uri,
         'binddn': instance.root_dn,
-        'binddn_pass': instance.root_pw}
+        'bindpw': instance.root_pw}
     con = ezldap.auto_bind(config)
 
 
