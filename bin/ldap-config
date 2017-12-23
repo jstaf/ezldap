@@ -3,7 +3,7 @@
 import os
 import shutil
 import argparse
-from collections import OrderedDict
+import pkg_resources
 
 import yaml
 import ezldap
@@ -12,6 +12,9 @@ def main():
     parser = argparse.ArgumentParser(description=
         'Create a set of configs for ezldap scripts under ~/.ezldap/.'
         'To delete your ezldap config, just delete the ~/.ezldap folder.')
+    parser.add_argument('-f', '--force', default=False, const=True, action='store_const',
+        help='Whether to force overwriting existing config files in ~/.ezldap '
+        '(namely LDIF templates).')
     argv = parser.parse_args()
 
     if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
@@ -25,8 +28,7 @@ def main():
         'bindpw': 'Bind password (leave blank to prompt for password)',
         'peopledn': 'User base dn',
         'groupdn': 'Group base dn',
-        'uidstart': 'UID to start users at',
-        'gidstart': 'GID to start groups at'
+        'homedir': 'Default home directory for new users'
     }
 
 
@@ -38,6 +40,12 @@ def main():
         stream=open(os.path.expanduser('~/.ezldap/config.yml'), 'w'),
         default_flow_style=False)
 
+    for template in pkg_resources.resource_listdir('ezldap', 'templates'):
+        if not os.path.exists(os.path.expanduser('~/.ezldap/' + template)):
+            content = pkg_resources.resource_string('ezldap', 'templates/' + template).decode()
+            with open(os.path.expanduser('~/.ezldap/' + template), 'w') as fout:
+                fout.write(content)
+            
 
 def interactive_conf(prompt, default=None):
     '''

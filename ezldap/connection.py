@@ -28,16 +28,21 @@ def get_attrib_list(query, name):
     return attrs
 
 
-def ldap_auto_bind(conf=None):
+def auto_bind(conf=None):
     '''
     Automatically detects LDAP config values and returns a directory binding.
     '''
     if conf is None:
         conf = config()
 
-    binding = LDAP(conf['host'], conf['binddn'], conf['bindpw'])
-    binding.peopledn = conf['peopledn']
-    binding.groupdn = conf['groupdn']
+    binding = LDAP(conf['host'])
+    
+    if conf['bindpw'] is None:
+        print('Enter bind DN password...', file=sys.stderr)
+        conf['bindpw'] = getpass.getpass()
+
+    binding.simple_bind_s(conf['binddn'], conf['bindpw'])
+    binding.start_tls_s()
     return binding
 
 
@@ -45,24 +50,12 @@ class LDAP(LDAPObject):
     ''' 
     An object-oriented wrapper around an LDAP connection.
     Used to make pyldap's LDAPObject even easier to use.
-    To automatically create a binding use ldap_auto_bind().
+    To automatically create a binding use auto_bind() instead.
     '''
 
-    def __init__(self, host, binddn, bindpw=None):
-        ''' 
-        Create a new connection and bind.
-        '''
+    def __init__(self, host):
         super().__init__(host, trace_file=sys.stderr, trace_stack_limit=None)
         
-        if bindpw is None:
-            print('Enter bind DN password...', file=sys.stderr)
-            bindpw = getpass.getpass()
-
-        self.simple_bind_s(binddn, bindpw)
-        #TODO figure out how to grab these
-        self.peopledn = None
-        self.groupdn = None
-
 
     def __enter__(self):
         return self
@@ -181,7 +174,7 @@ class LDAP(LDAPObject):
         replace.update(kwargs)
         if replace['userdn'] is None:
             try:
-                replace['userdn'] = self.get_user(username)[0][0]
+                replace['userdn'] = self.get_user(username, self.base_dn())[0][0]
             except IndexError:
                 raise ValueError('User does not exist')
 
@@ -208,7 +201,7 @@ class LDAP(LDAPObject):
 
         if replace['gid'] is None:
             try:
-                replace['gid'] = int(get_attrib_list(self.get_group(groupname), 'gidNumber')[0])
+                replace['gid'] = int(get_attrib_list(self.get_group(groupname, self.base_dn()), 'gidNumber')[0])
             except IndexError:
                 raise ValueError('Group does not exist')
 

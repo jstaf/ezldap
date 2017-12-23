@@ -6,7 +6,7 @@ import pytest
 
 from ezldap import LDIF
 
-template = 'config/ldap-add-group.ldif'
+template = 'templates/ldap-add-group.ldif'
 
 def test_templating():
     '''

@@ -6,7 +6,6 @@ import pytest
 import slapdtest
 
 import ezldap
-from ezldap import LDAP
 
 con = None
 binddn = None
@@ -24,7 +23,7 @@ def slapd():
         'host': instance.ldap_uri,
         'binddn': instance.root_dn,
         'binddn_pass': instance.root_pw}
-    con = LDAP(config)
+    con = ezldap.auto_bind(config)
 
 
 def test_bind_success(slapd):

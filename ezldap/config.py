@@ -12,7 +12,7 @@ def config():
     '''
     Attempts to generate a dictionary of config values for LDAP details from 
     the following config files, in order:
-    ~/.ezldap.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
+    ~/.ezldap/config.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
     '''
     if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
         return yaml.load(open(os.path.expanduser('~/.ezldap/config.yml')))
@@ -26,10 +26,9 @@ def guess_config():
         'host': get_ldap_host(),
         'binddn': get_current_dn(),
         'bindpw': None,
-        'peopledn': None,
-        'groupdn': None,
-        'uidstart': 10000,
-        'gidstart': 10000
+        'peopledn': 'ou=People,' + base,
+        'groupdn': 'ou=Group,' + base,
+        'homedir': '/home'
     }
     return conf
 

@@ -4,6 +4,7 @@ Read and write LDIF files to/from a dict
 
 import sys
 import io
+import os
 from string import Template
 from collections import OrderedDict
 
@@ -19,7 +20,9 @@ class LDIF(ldif_.LDIFParser):
         self.entries = OrderedDict()
         
         if path is not None:
-            template = Template(open(path).read())
+            # read into a string buffer first
+            # otherwise python-ldap's LDIF parser will choke on symbols
+            template = Template(open(os.path.expanduser(path)).read())
             strbuf = io.StringIO(template.substitute(replacements))
             ldif_.LDIFParser.__init__(self, strbuf)
             self.parse()

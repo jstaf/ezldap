@@ -1,5 +1,6 @@
-from setuptools import setup
 from glob import glob
+
+from setuptools import setup
 
 setup(
     name='ezldap',
