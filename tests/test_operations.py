@@ -27,6 +27,7 @@ def test_bind_success(slapd):
     assert con.whoami_s() == 'dn:' + binddn
 
 
+@pytest.fixture(scope='module')
 def test_no_entries_yet(slapd):
     assert con.next_uidn() == 10000
     assert con.next_gidn() == 10000

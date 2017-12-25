@@ -18,7 +18,7 @@ def main():
         print('Enter SSHA password hash...')
         ssha = getpass.getpass()
     else:
-        with ezldap.LDAP() as con:
+        with ezldap.auto_bind() as con:
             query = con.get_user(argv.USERNAME)
             if len(query) != 1:
                 sys.exit('User not found.')

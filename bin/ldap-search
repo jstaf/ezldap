@@ -11,7 +11,7 @@ def main():
     argv = parser.parse_args()
     key = argv.keyword
 
-    with ezldap.LDAP() as con:
+    with ezldap.auto_bind() as con:
         base_dn = con.base_dn()
         # retrieves everything... 
         # might not work against huge LDAP directories due to paging limits

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
-
 import ezldap
 
 def main():
@@ -15,28 +13,9 @@ def main():
             help='Do a "dry run" (i.e. just print what actions will be performed without doing anything).')
     argv = parser.parse_args()
     groupname = argv.group_name[0]
-    gid = argv.gid
 
-    with ezldap.LDAP() as con:
-        # create ldif for use
-        vals = con.get_placeholders()
-        if gid is None:
-            gid = con.next_gidn()
-
-        vals['GID'] = gid
-        vals['GROUPNAME'] = groupname
-        ldif = ezldap.LDIF('etc/ldap-add-group.ldif')
-        ldif.unplaceholder(vals)
-    
-        print('\nCreating group {} with LDIF:'.format(groupname), 
-                file=sys.stderr)
-        ldif.write()
-
-        if argv.dry_run:
-            print('No changes performed.', file=sys.stderr)
-            sys.exit(0)
-
-        con.ldif_add(ldif)
+    with ezldap.auto_bind() as con:
+        con.add_group(groupname)
 
 if __name__ == '__main__':
     main()

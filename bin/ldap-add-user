@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
 import ezldap
 
@@ -9,71 +8,27 @@ def main():
             "Creates an LDAP user and add to a group. " 
             "Creates a same-named LDAP group as well if no group specified."
             "Prints the randomly generated password to stdout.")
-    parser.add_argument('USERNAME', nargs=1, type=str,
+    parser.add_argument('username', nargs=1, type=str,
             help="Username to create.")
-    parser.add_argument('GROUPNAME', nargs='?', type=str,
+    parser.add_argument('groupname', nargs='?', type=str,
             help="Groupname to add user to. If omitted, creates same-named LDAP group.")
     parser.add_argument('-n', '--dry-run', default=False, 
             const=True, action='store_const')
     argv = parser.parse_args()
+    user = argv.username[0]
+    group = argv.groupname
 
-    with ezldap.LDAP() as con:
-        
-        # parse arguments and get all key values for ldif
-        replace = {}
-        replace['USERNAME'] = argv.USERNAME[0]
-        replace['UID'] = con.next_uidn()
-    
-        group = argv.GROUPNAME
-        create_group = False
+    with ezldap.auto_bind() as con:
         if group is None:
             # create a new group
-            create_group = True
-            replace['GROUPNAME'] = replace['USERNAME']
-            replace['GID'] = con.next_gidn()
-        else:
-            # find existing group
-            replace['GROUPNAME'] = group
-            query = con.get_group(group)
-            if len(query) != 1:
-                sys.exit('No matching group found.')
-            else:
-                replace['GID'] = int(ezldap.get_attrib_list(query, 'gidNumber')[0])
-
-        replace.update(con.get_placeholders())
+            group = user
+            con.add_group(group)
 
         passwd = ezldap.random_passwd()
-        print('# Password for {} is: {}'.format(replace['USERNAME'], passwd))
-        replace['USER_PASSWORD'] = ezldap.ssha_passwd(passwd)
+        print('# Password for {} is: {}'.format(user, passwd))
 
-        # populate "add user" ldif
-        add_user = ezldap.LDIF('etc/ldap-add-user.ldif')
-        add_user.unplaceholder(replace)
-        add_user.write()
-
-        replace['USERDN'] = list(add_user.entries.keys())[0]
-
-        if create_group:
-            add_group = ezldap.LDIF('etc/ldap-add-group.ldif')
-            add_group.unplaceholder(replace)
-            add_group.write()
-        
-        # now add user to group
-        add_to_group = ezldap.LDIF('etc/ldap-add-user-to-group.ldif')
-        add_to_group.unplaceholder(replace)
-        add_to_group.write()
-
-        if argv.dry_run:
-            print('No changes performed.', file=sys.stderr)
-        else:
-            # apply changes
-            con.ldif_add(add_user)
-            if create_group:  
-                con.ldif_add(add_group)
-
-            con.ldif_modify(add_to_group)
-    
+        con.add_user(user, group, passwd)
+        con.add_user_to_group(user, group)
 
 if __name__ == '__main__':
     main()
-

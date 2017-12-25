@@ -7,14 +7,14 @@ import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description='Change or randomize a userpassword.')
-    parser.add_argument('USERNAME', nargs=1, type=str, 
+    parser.add_argument('username', nargs=1, type=str, 
             help='User to reset password for.')
     parser.add_argument('-s', '--specify-password', 
             default=False, const=True, action='store_const',
             help='Lets you specify a password instead of randomizing it.')
     argv = parser.parse_args()
     
-    user = argv.USERNAME[0]
+    user = argv.username[0]
     if argv.specify_password:
         print('Specify new password for {}...'.format(user))
         passwd = getpass.getpass()
@@ -25,7 +25,7 @@ def main():
     ssha = ezldap.ssha_passwd(passwd).encode()
     modlist = [(ldap.MOD_REPLACE, 'userPassword', ssha)]
 
-    with ezldap.LDAP() as con:
+    with ezldap.auto_bind() as con:
         dn = con.get_user(user)[0][0]
         con.modify_s(dn, modlist)
 

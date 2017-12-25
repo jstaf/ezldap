@@ -45,7 +45,8 @@ def auto_bind(conf=None):
     try:
         binding.start_tls_s()
     except ldap.PROTOCOL_ERROR:
-        print('Warning: LDAP over TLS appears to be unsupported, binding anyways.', file=sys.stderr)
+        print('Warning: LDAP over TLS appears to be unsupported, proceeding without...', 
+            file=sys.stderr)
 
     return binding
 
@@ -118,24 +119,24 @@ class LDAP(LDAPObject):
         return max(gidns) + 1
 
 
-    def get_user(self, user, peopledn):
+    def get_user(self, user, peopledn=None):
         '''
-        Return given user
+        Return given user. Searches entire directory if no base search dn given.
         '''
-        query = self.search_s(peopledn, 
-                              ldap.SCOPE_SUBTREE, 
-                              '(uid={})'.format(user))
-        return query
+        if peopledn is None:
+            peopledn = self.base_dn()
+
+        return self.search_safe(peopledn, '(uid={})'.format(user))
 
 
-    def get_group(self, group, groupdn):
+    def get_group(self, group, groupdn=None):
         '''
-        Return a given group
+        Return a given group. Searches entire directory if no base search dn given.
         '''
-        query = self.search_s(groupdn,
-                              ldap.SCOPE_SUBTREE,
-                              '(cn={})'.format(group))
-        return query
+        if groupdn is None:
+            groupdn = self.base_dn()
+
+        return self.search_safe(groupdn, '(cn={})'.format(group))
 
 
     def ldif_add(self, ldif):
@@ -156,7 +157,7 @@ class LDAP(LDAPObject):
 
 
     def add_group(self, groupname, 
-        ldif_path='config/ldap-add-group.ldif', **kwargs):
+        ldif_path='~/.ezldap/ldap-add-group.ldif', **kwargs):
         """
         Adds a group from an LDIF template.
         """
@@ -164,18 +165,17 @@ class LDAP(LDAPObject):
                 'gid': None, 
                 'groupname': groupname}
         
-        replace.update(self.get_placeholders())
+        replace.update(config())
         replace.update(kwargs)
         if replace['gid'] is None:
             replace['gid'] = self.next_gidn()
         
-        ldif = LDIF(ldif_path)
-        ldif.unplaceholder(replace)
+        ldif = LDIF(ldif_path, replace)
         self.ldif_add(ldif)
 
 
     def add_user_to_group(self, username, groupname,
-        ldif_path='config/ldap-add-user-to-group.ldif', **kwargs):
+        ldif_path='~/.ezldap/ldap-add-user-to-group.ldif', **kwargs):
         """
         Adds a user to a group.
         The user and group in question must already exist.
@@ -185,7 +185,7 @@ class LDAP(LDAPObject):
                 'groupname': groupname,
                 'userdn': None}
 
-        replace.update(self.get_placeholders())
+        replace.update(config())
         replace.update(kwargs)
         if replace['userdn'] is None:
             try:
@@ -193,13 +193,12 @@ class LDAP(LDAPObject):
             except IndexError:
                 raise ValueError('User does not exist')
 
-        ldif = LDIF(ldif_path)
-        ldif.unplaceholder(replace)
+        ldif = LDIF(ldif_path, replace)
         self.ldif_modify(ldif)
 
 
     def add_user(self, username, groupname, password,  
-        ldif_path='config/ldap-add-user.ldif', **kwargs):
+        ldif_path='~/.ezldap/ldap-add-user.ldif', **kwargs):
         """
         Adds a user. Does not create or modify groups.
         """
@@ -209,7 +208,7 @@ class LDAP(LDAPObject):
             'gid': None,
             'uid': None}
 
-        replace.update(self.get_placeholders())
+        replace.update(config())
         replace.update(kwargs)
         if replace['uid'] is None:
             replace['uid'] = self.next_uidn()
@@ -220,8 +219,7 @@ class LDAP(LDAPObject):
             except IndexError:
                 raise ValueError('Group does not exist')
 
-        ldif = LDIF(ldif_path)
-        ldif.unplaceholder(replace)
+        ldif = LDIF(ldif_path, replace)
         self.ldif_add(ldif)
 
 

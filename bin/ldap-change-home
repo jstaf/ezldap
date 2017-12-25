@@ -16,7 +16,7 @@ def main():
     homedir = argv.HOMEDIR[0].encode()
     modlist = [(ldap.MOD_REPLACE, 'homeDirectory', homedir)]
 
-    with ezldap.LDAP() as con:
+    with ezldap.auto_bind() as con:
         dn = con.get_user(user)[0][0]
         con.modify_s(dn, modlist)
 

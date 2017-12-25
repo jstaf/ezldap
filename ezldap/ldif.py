@@ -22,7 +22,8 @@ class LDIF(ldif_.LDIFParser):
         if path is not None:
             # read into a string buffer first
             # otherwise python-ldap's LDIF parser will choke on symbols
-            template = Template(open(os.path.expanduser(path)).read())
+            path = os.path.expanduser(path)
+            template = Template(open(path).read())
             strbuf = io.StringIO(template.substitute(replacements))
             ldif_.LDIFParser.__init__(self, strbuf)
             self.parse()
