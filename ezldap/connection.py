@@ -155,7 +155,28 @@ class LDAP(LDAPObject):
             modlist = _create_modify_modlist(attrs)
             self.modify_s(dn, modlist)
 
+    
+    def modify_replace(self, dn, attrib, value):
+        '''
+        Change a single attribute on an object.
+        '''
+        self.modify_s(dn, [(ldap.MOD_REPLACE, attrib, value)])
 
+
+    def modify_add(self, dn, attrib, value):
+        '''
+        Add a single attribute to an object.
+        '''
+        self.modify_s(dn, [(ldap.MOD_ADD, attrib, value)])
+
+    
+    def modify_delete(self, dn, attrib, value):
+        '''
+        Delete a single attribute from an object.
+        '''
+        self.modify_s(dn, [(ldap.MOD_DELETE, attrib, value)])
+    
+    
     def add_group(self, groupname, 
         ldif_path='~/.ezldap/ldap-add-group.ldif', **kwargs):
         """
