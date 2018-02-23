@@ -9,46 +9,24 @@ user as simple as `ldap-add-user <username>`
 
 ## Installation
 
-Install Python 3.4+ and the development branch of `python-ldap` 
-(`pip install --user git+https://github.com/python-ldap/python-ldap.git`).
-The current Github copy of `python-ldap` supports Python 3, 
-while the PyPI copy does not. 
+You'll need a copy of Python 3.4+ and the openldap development headers to start.
+Running the tests requires `openldap-servers` as well. 
 
 On Centos 7:
 
 ```{bash}
-sudo yum -y install epel-release openldap-devel gcc gcc-g++
-# Python 3.4 is from EPEL
+sudo yum -y install epel-release openldap-devel openldap-clients gcc gcc-g++
 sudo yum -y install python34 python34-pip python34-devel
-pip3 install --user git+https://github.com/python-ldap/python-ldap.git
+pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```
 
-**You must edit the configuration files in `etc/` before use!**
-
-### etc/config.yaml
-
-`config.yaml` is used to define connection credentials and "placeholder" values.
-Any attribute in `config.yaml` with a name in UPPERCASE is a placeholder value.
-You may also add arbitrary placeholders in `config.yaml` to be used later.
-An example config file has been provided for use as a template (`etc/config.yaml.example`).
-
-Required values:
-
-* **host** - Your LDAP host.
-* **binddn** - DN of your directory manager account.
-* **binddn\_pass** - Password for the directory manager. Leave blank to prompt for passwordwhen connecting to LDAP.
-* **people** - Base DN for your users.
-* **group** - Base DN for your groups.
-* **uidstart** - `uidNumber` to begin making LDAP accounts at (will use highest numbered LDAP `uidNumber` otherwise).
-* **gidstart** - `gidNumber` to begin making LDAP groups at (will use highest numbered LDAP `gidNumber` otherwise).
-
-### .ldif files in /etc
-
-These are the LDIF files used by this package's scripts to 
-add/delete/modify LDAP entries.
-Values in UPPERCASE will be automatically replaced by 
-the UPPERCASE placeholder values in `config.yaml`.
-You can edit these files to customize the behavior of ezldap' scripts.
+Configure your LDAP connection details with `ldap-config` before using the package.
+You do not need to run this script as root.
+The connection details/LDIF templates/etc. for `ezldap` are stored in `~/.ezldap`.
+Though you can store your bind password here, 
+I do not recommend doing so, as it will be stored in cleartext. 
+You may wish to configure the LDIF templates under `~/.ezldap` 
+as well if you intend to use this package's add object functionality.
 
 ## Using this package
 
@@ -59,4 +37,4 @@ All scripts print the LDIF of their retrieved data/changes to stdout
 (so you could use the result of a dry-run as an ldif for other tools like `ldapadd` for instance).
 
 Keep in mind this package is under active development and may not be appropriate for all use cases.
-Use at your own risk!
+
