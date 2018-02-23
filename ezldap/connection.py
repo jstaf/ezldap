@@ -37,17 +37,25 @@ def auto_bind(conf=None):
 
     binding = LDAP(conf['host'])
     
-    if conf['bindpw'] is None:
-        print('Enter bind DN password...', file=sys.stderr)
-        conf['bindpw'] = getpass.getpass()
-
-    binding.simple_bind_s(conf['binddn'], conf['bindpw'])
     try:
         binding.start_tls_s()
     except ldap.PROTOCOL_ERROR:
         print('Warning: LDAP over TLS appears to be unsupported, proceeding without...', 
             file=sys.stderr)
+    except ldap.CONNECT_ERROR as e:
+        # give some helpful advice and rethrow
+        print('Your certificate is untrusted - '
+              'this is either an SELinux issue or '
+              'your LDAP SSL has not been setup correctly.', 
+              file=sys.stderr)
+        raise e
 
+    if conf['bindpw'] is None:
+        print('Enter bind DN password...', file=sys.stderr)
+        conf['bindpw'] = getpass.getpass()
+
+    binding.simple_bind_s(conf['binddn'], conf['bindpw'])
+    
     return binding
 
 
@@ -82,13 +90,21 @@ class LDAP(LDAPObject):
         return re.findall(r'dc=.+$', whoami)[0]
 
     
-    def search_safe(self, basedn, search_filter, scope=ldap.SCOPE_SUBTREE):
+    def search_safe(self, basedn=None, filter='(objectClass=*)', 
+            scope=ldap.SCOPE_SUBTREE):
         '''
         A wrapper around search_s that returns empty lists instead of exceptions
-        when no results are found.
+        when no results are found. If basedn is None, the directory base DN will
+        be used.
         '''
+        if basedn is None:
+            basedn = self.base_dn()
+
+        #TODO - implement paging limits to avoid ldap.SIZELIMIT_EXCEEDED
+        #for non admin binds
+
         try:
-            return self.search_s(basedn, scope, search_filter)
+            return self.search_ext_s(basedn, scope, filterstr=filter)
         except ldap.NO_SUCH_OBJECT:
             return []
 
