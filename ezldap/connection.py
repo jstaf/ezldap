@@ -263,3 +263,4 @@ def _create_modify_modlist(attrs):
                             attrs[attrib_name]))
 
     return modlist
+
