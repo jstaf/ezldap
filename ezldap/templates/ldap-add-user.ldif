@@ -9,4 +9,9 @@ userPassword: $user_password
 loginShell: /bin/bash
 uidNumber: $uid
 gidNumber: $gid 
+gecos: $username
+shadowMax: 180
+shadowWarning: 7
+shadowLastChange: 0
 homeDirectory: $homedir/$username
+

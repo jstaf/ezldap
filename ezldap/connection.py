@@ -215,9 +215,10 @@ class LDAP(LDAPObject):
 
     def add_user(self, username, groupname, password,  
         ldif_path='~/.ezldap/ldap-add-user.ldif', **kwargs):
-        """
+        ''' 
         Adds a user. Does not create or modify groups.
-        """
+        "groupname" may be None if "gid" is specified.
+        '''
         replace = {
             'username': username,
             'user_password': ssha_passwd(password),
