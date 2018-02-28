@@ -4,11 +4,11 @@ objectClass: posixAccount
 objectClass: shadowAccount
 objectClass: inetOrgPerson
 cn: $username
-sn: $username 
+sn: $username
 userPassword: $user_password
 loginShell: /bin/bash
 uidNumber: $uid
-gidNumber: $gid 
+gidNumber: $gid
 gecos: $username
 shadowMax: 180
 shadowWarning: 7

@@ -21,7 +21,7 @@ def main():
     group = argv.groupname
 
     with ezldap.auto_bind() as con:
-        query = con.search_safe(filter='cn={}'.format(groupname))
+        query = con.search_safe(filter='cn={}'.format(group))
         group_is_local = len(query) == 0
 
         passwd = ezldap.random_passwd()
