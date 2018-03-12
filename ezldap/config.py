@@ -55,7 +55,7 @@ def get_ldap_host():
     '''
     try:
         ldap_conf = readlines_to_dict(open('/etc/openldap/ldap.conf').readlines())
-        return ldap_conf['URI']
+        return ldap_conf['URI'][0]
     except KeyError:
         return None
 
@@ -66,7 +66,7 @@ def get_base_dn():
     '''
     ldap_conf = readlines_to_dict(open('/etc/openldap/ldap.conf').readlines())
     try:
-        return ldap_conf['BASE']
+        return ldap_conf['BASE'][0]
     except KeyError:
         return None
 
@@ -80,10 +80,11 @@ def get_current_dn():
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         whoami = [line.decode() for line in proc.stdout.readlines()]
         whoami_dict = readlines_to_dict(whoami)
-        return whoami_dict['dn:']
+        return whoami_dict['dn:'][0]
     except KeyError:
         return None
 
 
 def get_current_group_dn():
     return None
+

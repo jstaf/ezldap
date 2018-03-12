@@ -37,6 +37,8 @@ def slapd():
     os.system('ldapadd -x -H {} -D {} -w {} -f /etc/openldap/schema/inetorgperson.ldif'.format(config['host'], config['binddn'], config['bindpw']))
     os.system('ldapadd -x -H {} -D {} -w {} -f tests/setup.ldif'.format(config['host'], config['binddn'], config['bindpw']))
     #con.ldif_add(ezldap.LDIF('tests/setup.ldif'))
+    assert con.next_uidn() == 10000
+    assert con.next_gidn() == 10000
 
 
 def test_bind_success(slapd):

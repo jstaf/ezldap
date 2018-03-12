@@ -5,17 +5,14 @@ import ezldap
 
 def main():
     parser = argparse.ArgumentParser(description="Creates an LDAP group.")
-    parser.add_argument('group_name', nargs=1, type=str, 
+    parser.add_argument('groupname', nargs=1, type=str, 
             help='LDAP group name to create.')
-    parser.add_argument('gid', nargs='?', type=int, default=None,
+    parser.add_argument('gid', nargs='?', type=str, default=None,
             help='GID number of group to create. If not supplied, uses next available GID number.')
-    parser.add_argument('-n', '--dry-run', default=False, const=True, action='store_const', 
-            help='Do a "dry run" (i.e. just print what actions will be performed without doing anything).')
     argv = parser.parse_args()
-    groupname = argv.group_name[0]
 
     with ezldap.auto_bind() as con:
-        con.add_group(groupname)
+        con.add_group(argv.groupname[0], gid=argv.gid)
 
 if __name__ == '__main__':
     main()
