@@ -182,14 +182,9 @@ class LDAP(LDAPObject):
         """
         Adds a group from an LDIF template.
         """
-        replace = {
-                'gid': None, 
-                'groupname': groupname}
-        
+        replace = {'groupname': groupname, 'gid': self.next_gidn()}
         replace.update(config())
         replace.update(kwargs)
-        if replace['gid'] is None:
-            replace['gid'] = self.next_gidn()
         
         ldif = LDIF(ldif_path, replace)
         self.ldif_add(ldif)

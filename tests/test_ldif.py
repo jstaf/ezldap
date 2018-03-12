@@ -12,10 +12,12 @@ def test_templating():
     '''
     Does the LDIF properly fail on all the right fields
     '''
-    with pytest.raises(KeyError) as err:
+    with pytest.raises(ValueError) as err:
         LDIF(template)
         assert 'groupname' in str(err.value)
 
+
+    with pytest.raises(KeyError) as err:
         LDIF(template, replacements={'groupname': 'test'})
         assert 'groupdn' in str(err.value)
 

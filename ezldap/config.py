@@ -10,7 +10,7 @@ import yaml
 
 def config():
     '''
-    Attempts to generate a dictionary of config values for LDAP details from 
+    Attempts to generate a dictionary of config values for LDAP details from
     the following config files, in order:
     ~/.ezldap/config.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
     '''
@@ -26,8 +26,8 @@ def guess_config():
         'host': get_ldap_host(),
         'binddn': get_current_dn(),
         'bindpw': None,
-        'peopledn': 'ou=People,' + base,
-        'groupdn': 'ou=Group,' + base,
+        'peopledn': 'ou=People,{}'.format(base),
+        'groupdn': 'ou=Group,{}'.format(base),
         'homedir': '/home'
     }
     return conf
@@ -76,10 +76,9 @@ def get_current_dn():
     Get the dn of the user you are currently as using ldapsearch.
     '''
     try:
-        proc = subprocess.Popen('ldapsearch -x uid=`whoami`', 
+        proc = subprocess.Popen('ldapsearch -x uid=$(whoami)', 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        whoami = proc.stdout.readlines()
-        whoami = list(map(lambda x: x.decode(), whoami))
+        whoami = [line.decode() for line in proc.stdout.readlines()]
         whoami_dict = readlines_to_dict(whoami)
         return whoami_dict['dn:']
     except KeyError:
