@@ -44,11 +44,9 @@ def auto_bind(conf=None):
             file=sys.stderr)
     except ldap.CONNECT_ERROR as e:
         # give some helpful advice and rethrow
-        print('Your certificate is untrusted - '
-              'this is either an SELinux issue or '
-              'your LDAP SSL has not been setup correctly.', 
-              file=sys.stderr)
-        raise e
+        raise ldap.CONNECT_ERROR(
+            'Your certificate is untrusted - this is either an SELinux issue or '
+            'your LDAP SSL has not been setup correctly.') from e
 
     if conf['bindpw'] is None:
         print('Enter bind DN password...', file=sys.stderr)
@@ -186,9 +184,10 @@ class LDAP(LDAPObject):
         self.modify_s(dn, [(ldap.MOD_ADD, attrib, value)])
 
     
-    def modify_delete(self, dn, attrib, value):
+    def modify_delete(self, dn, attrib, value=None):
         '''
         Delete a single attribute from an object.
+        If value is None, deletes all attributes of that name.
         '''
         self.modify_s(dn, [(ldap.MOD_DELETE, attrib, value)])
     
@@ -276,12 +275,13 @@ def _create_modify_modlist(attrs):
         # else iterate over those values of change type
         for attrib_name in attrs[change_type]:
             attrib_name = attrib_name.decode()
-            if change_type == 'delete':
-                mod_vals = None
-            else:
-                mod_vals = attrs[attrib_name]
-
-            modlist.append((changes[change_type], attrib_name, mod_vals))
+            try:
+                modlist.append((changes[change_type], attrib_name, attrs[attrib_name]))
+            except KeyError as e:
+                if change_type == 'delete':
+                    # mod_vals is allowed to be None when performing a delete
+                    modlist.append((changes[change_type], attrib_name, None))
+                else:
+                    raise KeyError('No value found to modify. Check your LDIF syntax.') from e
 
     return modlist
-
