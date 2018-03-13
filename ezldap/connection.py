@@ -241,10 +241,11 @@ class LDAP(LDAPObject):
 
 
 def _create_modify_modlist(attrs):
-    """
+    '''
     We need to carefully massage our LDIF object to a 
     pyldap modlist because the pyldap API is super awkward.
-    """
+    Ref: https://www.python-ldap.org/en/latest/reference/ldap.html#ldap.LDAPObject.modify_ext_s
+    '''
     changes = OrderedDict()
     changes['delete'] = ldap.MOD_DELETE
     changes['replace'] = ldap.MOD_REPLACE
@@ -259,9 +260,12 @@ def _create_modify_modlist(attrs):
         # else iterate over those values of change type
         for attrib_name in attrs[change_type]:
             attrib_name = attrib_name.decode()
-            modlist.append((changes[change_type], 
-                            attrib_name, 
-                            attrs[attrib_name]))
+            if change_type == 'delete':
+                mod_vals = None
+            else:
+                mod_vals = attrs[attrib_name]
+
+            modlist.append((changes[change_type], attrib_name, mod_vals))
 
     return modlist
 
