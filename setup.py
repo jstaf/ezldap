@@ -15,7 +15,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'PyYAML',
-        'pyldap'  # python-ldap once v3.0 of python-ldap is available
+        'python-ldap'
     ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
