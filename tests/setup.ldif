@@ -1,0 +1,7 @@
+dn: ou=Group,dc=slapd-test,dc=python-ldap,dc=org
+objectClass: top
+objectClass: organizationalUnit
+-
+dn: ou=People,dc=slapd-test,dc=python-ldap,dc=org
+objectClass: top
+objectClass: organizationalUnit

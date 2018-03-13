@@ -2,7 +2,6 @@
 
 import argparse
 import getpass
-import ldap
 import ezldap
 
 def main():
@@ -23,11 +22,10 @@ def main():
         print('New password for {} - {}'.format(user, passwd))
 
     ssha = ezldap.ssha_passwd(passwd).encode()
-    modlist = [(ldap.MOD_REPLACE, 'userPassword', ssha)]
 
     with ezldap.auto_bind() as con:
         dn = con.get_user(user)[0][0]
-        con.modify_s(dn, modlist)
+        con.modify_replace(dn, 'userPassword', ssha)
 
     
 if __name__ == '__main__':

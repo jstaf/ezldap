@@ -12,7 +12,7 @@ import ldif as ldif_
 
 class LDIF(ldif_.LDIFParser):
 
-    def __init__(self, path=None, replacements={}):
+    def __init__(self, path=None, replacements=None):
         """
         Create a new LDIF reader. 
         If path is None, you are expected to populate self.entries.
@@ -23,9 +23,13 @@ class LDIF(ldif_.LDIFParser):
             # read into a string buffer first
             # otherwise python-ldap's LDIF parser will choke on symbols
             path = os.path.expanduser(path)
-            template = Template(open(path).read())
-            strbuf = io.StringIO(template.substitute(replacements))
-            ldif_.LDIFParser.__init__(self, strbuf)
+            if replacements is None:
+                content = open(path)
+            else:
+                template = Template(open(path).read())
+                content = io.StringIO(template.substitute(replacements))
+
+            ldif_.LDIFParser.__init__(self, content)
             self.parse()
 
 

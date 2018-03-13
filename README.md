@@ -3,9 +3,36 @@ ezldap
 
 An object-oriented Python LDAP API and set of bundled scripts to make
 common LDAP tasks easier.
-The focus of this package is autodetection of as many ldap config values
-as possible, making a complex task like generating an LDIF and adding a
-user as simple as `ldap-add-user <username>` 
+
+Although several very comprehensive LDAP API's currently exist (notably
+`python-ldap` and `ldap3`), neither are particularly easy to use and
+generally focus more on the specifics of communicating via LDAP rather than
+exposing an easy to use high-level API. This package is designed to do that.
+The target audience of this package is system administrators and support 
+staff who are on a timeline and just need to add a user or write a quick 
+script in a portable manner. 
+
+So how is `ezldap` different? It is a wrapper around the `python-ldap`
+API that gives access to easily perform a number of high-level tasks
+like searching an LDAP directory, adding a user and sending them an 
+email, or resetting someone's password securely. This process is 
+streamlined by a configuration script that autodetects as many LDAP 
+configuration values as possible and automates future connections to the
+directory server. Additionally, additions to an LDAP directory are performed
+using a set of configurable LDIF templates, making it very quick to 
+customize the behavior of certain actions (like adding a group). Finally, 
+for most tasks, a set of pre-made scripts are provided, for users who just
+want to get started doing stuff.
+
+**Example:**
+
+```python
+import ezldap
+
+# ezldap.auto_bind() uses connection details from the "ldap-config" script
+with ezldap.auto_bind() as con:
+    con.add_user('username', 'groupname', 'password')
+```
 
 ## Installation
 
@@ -31,10 +58,5 @@ as well if you intend to use this package's add object functionality.
 ## Using this package
 
 Refer to the scripts' command-line help (`./script-name -h`) for usage info and documentation.
-Any scripts that modify the LDAP directory have a "dry-run" option (`--dry-run`/`-n`).
-When run using the dry-run option, no changes will be performed.
-All scripts print the LDIF of their retrieved data/changes to stdout 
-(so you could use the result of a dry-run as an ldif for other tools like `ldapadd` for instance).
-
 Keep in mind this package is under active development and may not be appropriate for all use cases.
-
+Functionality is constantly being added, and the API should not yet be considered stable. 
