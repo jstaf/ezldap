@@ -3,6 +3,7 @@ Ensure that the LDIF templating is working correctly.
 '''
 
 import pytest
+from io import StringIO
 
 from ezldap import LDIF
 
@@ -36,3 +37,7 @@ def test_template_content():
     vals = ldif.entries['cn=test,dc=Group,dc=example,dc=com']
     assert vals['cn'][0] == b'test'
     assert vals['gidNumber'][0] == b'10001'
+
+
+def test_dash_in_file():
+    LDIF('tests/setup.ldif').write(StringIO())

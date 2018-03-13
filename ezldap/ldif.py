@@ -13,10 +13,10 @@ import ldif as ldif_
 class LDIF(ldif_.LDIFParser):
 
     def __init__(self, path=None, replacements=None):
-        """
+        '''
         Create a new LDIF reader. 
         If path is None, you are expected to populate self.entries.
-        """
+        '''
         self.entries = OrderedDict()
         
         if path is not None:
@@ -64,17 +64,20 @@ class LDIF(ldif_.LDIFParser):
 
 
     def write(self, output=sys.stdout):
-        """
+        '''
         Write self.entries as LDIF file.
-        """
+        '''
         writer = ldif_.LDIFWriter(output)
         for dn, entry in self.entries.items():
+            if '-' in entry.keys():
+                entry.pop('-')
+
             writer.unparse(dn, entry)
 
         
     def populate(self, query):
-        """
+        '''
         Populate entries from an LDAP query (like LDAP.search_s()).
-        """
+        '''
         for dn, attrs in query:
             self.entries[dn] = attrs
