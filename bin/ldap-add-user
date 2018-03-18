@@ -22,7 +22,7 @@ def main():
 
     with ezldap.auto_bind() as con:
         query = con.search_safe(filter='cn={}'.format(group))
-        group_is_local = len(query) == 0
+        group_is_local = len(query) == 0 and group is not None
 
         passwd = ezldap.random_passwd()
         print('Password for {} is: {}'.format(user, passwd))
@@ -37,10 +37,10 @@ def main():
             con.add_user(user, None, passwd, gid=gr_gid)
         else:
             if group is None:
-                # create a new group
                 group = user
-                print('Creating LDAP group {}...'.format(group))
-                con.add_group(group)
+                if len(con.search_safe(filter='cn={}'.format(user))) == 0:
+                    print('Creating LDAP group {}...'.format(group))
+                    con.add_group(group)
            
             print('Creating user {}, member of LDAP group {}'.format(user, group))
             con.add_user(user, group, passwd)
