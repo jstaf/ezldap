@@ -35,18 +35,18 @@ def auto_bind(conf=None):
     if conf is None:
         conf = config()
 
-    binding = LDAP(conf['host'])
-    
-    try:
-        binding.start_tls_s()
-    except ldap.PROTOCOL_ERROR:
-        print('Warning: LDAP over TLS appears to be unsupported, proceeding without...', 
-            file=sys.stderr)
-    except ldap.CONNECT_ERROR as e:
-        # give some helpful advice and rethrow
-        raise ldap.CONNECT_ERROR(
-            'Your certificate is untrusted - this is either an SELinux issue or '
-            'your LDAP SSL has not been setup correctly.') from e
+    uri = conf['host']
+    binding = LDAP(uri)
+    if uri.startswith('ldaps://'):
+        try:
+            binding.start_tls_s()
+        except ldap.PROTOCOL_ERROR as e:
+            raise ldap.PROTOCOL_ERROR('TLS appears to be unsupported.') from e
+        except ldap.CONNECT_ERROR as e:
+            # give some helpful advice and rethrow
+            raise ldap.CONNECT_ERROR(
+                'Your certificate is untrusted - this is either an SELinux issue or '
+                'your LDAP SSL has not been setup correctly.') from e
 
     if conf['bindpw'] is None:
         print('Enter bind DN password...', file=sys.stderr)
