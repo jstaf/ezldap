@@ -1,13 +1,11 @@
 .vscode/
 .cache/
 .eggs/
-.pytest_cache
-*.egg-info/
-python-ldap-test-*/
+.pytest_cache/
 __pycache__/
-
+python-ldap-test-*/
+slapd/
+*.egg-info/
 *.swp
 *.pyc
-config/*.txt
-config/config.yaml
 api-goal.sh
