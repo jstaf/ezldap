@@ -174,14 +174,14 @@ class LDAP(LDAPObject):
         '''
         Change a single attribute on an object.
         '''
-        self.modify_s(dn, [(ldap.MOD_REPLACE, attrib, value)])
+        self.modify_s(dn, [(ldap.MOD_REPLACE, attrib, to_bytes(value))])
 
 
     def modify_add(self, dn, attrib, value):
         '''
         Add a single attribute to an object.
         '''
-        self.modify_s(dn, [(ldap.MOD_ADD, attrib, value)])
+        self.modify_s(dn, [(ldap.MOD_ADD, attrib, to_bytes(value))])
 
     
     def modify_delete(self, dn, attrib, value=None):
@@ -189,7 +189,7 @@ class LDAP(LDAPObject):
         Delete a single attribute from an object.
         If value is None, deletes all attributes of that name.
         '''
-        self.modify_s(dn, [(ldap.MOD_DELETE, attrib, value)])
+        self.modify_s(dn, [(ldap.MOD_DELETE, attrib, to_bytes(value))])
     
     
     def add_group(self, groupname, 
@@ -255,6 +255,13 @@ class LDAP(LDAPObject):
         self.ldif_add(ldif)
 
 
+def to_bytes(value):
+    if not isinstance(value, bytes):
+        return str(value).encode()
+    else:
+        return value
+        
+        
 def _create_modify_modlist(attrs):
     '''
     We need to carefully massage our LDIF object to a 
