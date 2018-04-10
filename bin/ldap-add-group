@@ -10,9 +10,13 @@ def main():
     parser.add_argument('gid', nargs='?', type=str, default=None,
             help='GID number of group to create. If not supplied, uses next available GID number.')
     argv = parser.parse_args()
+    gid = argv.gid
 
     with ezldap.auto_bind() as con:
-        con.add_group(argv.groupname[0], gid=argv.gid)
+        if gid is None:
+            gid = con.next_gidn()
+
+        con.add_group(argv.groupname[0], gid=gid)
 
 if __name__ == '__main__':
     main()
