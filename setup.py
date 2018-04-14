@@ -1,5 +1,4 @@
-from glob import glob
-
+import glob
 from setuptools import setup
 
 setup(
@@ -11,13 +10,17 @@ setup(
     author_email='jeff.stafford@queensu.ca',
     license='BSD3',
     packages=['ezldap'],
-    scripts=glob('bin/*'),
+    scripts=glob.glob('bin/*'),
     include_package_data=True,
     install_requires=[
         'PyYAML',
         'python-ldap'
     ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=[
+        'pytest',
+        'pytest-docker',
+        'docker-compose'
+    ],
     zip_safe=False
 )

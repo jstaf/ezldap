@@ -1,6 +1,6 @@
-binddn: cn=Manager,dc=ezldap,dc=io
-bindpw: null
-groupdn: ou=Group,dc=ezldap,dc=io
-homedir: /home
 host: ldap:///
+binddn: cn=Manager,dc=ezldap,dc=io
+bindpw: password
+groupdn: ou=Group,dc=ezldap,dc=io
 peopledn: ou=People,dc=ezldap,dc=io
+homedir: /home

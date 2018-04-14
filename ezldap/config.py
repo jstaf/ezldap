@@ -8,13 +8,15 @@ import subprocess
 
 import yaml
 
-def config():
+def config(path=None):
     '''
     Attempts to generate a dictionary of config values for LDAP details from
     the following config files, in order:
     ~/.ezldap/config.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
     '''
-    if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
+    if path is not None:
+        return yaml.load(os.path.expanduser(path))
+    elif os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
         return yaml.load(open(os.path.expanduser('~/.ezldap/config.yml')))
     else:
         return guess_config()
@@ -76,7 +78,7 @@ def get_current_dn():
     Get the dn of the user you are currently as using ldapsearch.
     '''
     try:
-        proc = subprocess.Popen('ldapsearch -x uid=$(whoami)', 
+        proc = subprocess.Popen('ldapsearch -x uid=$(whoami)',
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         whoami = [line.decode() for line in proc.stdout.readlines()]
         whoami_dict = readlines_to_dict(whoami)
@@ -87,4 +89,3 @@ def get_current_dn():
 
 def get_current_group_dn():
     return None
-
