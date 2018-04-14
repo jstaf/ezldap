@@ -15,9 +15,9 @@ def ping_slapd():
     '''
     try:
         stdout = subprocess.check_output('ldapsearch -x', shell=True)
-        return true
+        return True
     except subprocess.CalledProcessError:
-        return false
+        return False
 
 
 @pytest.fixture(scope='session')
