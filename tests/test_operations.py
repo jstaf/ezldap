@@ -10,7 +10,7 @@ def test_bind_success(slapd):
     assert slapd.whoami_s() == 'dn:cn=Manager,dc=ezldap,dc=io'
 
 
-def test_add_group(slapd):
+def test_add_group(slapd, config):
     slapd.add_group('testgroup', ldif_path='ezldap/templates/ldap-add-group.ldif', **config)
     assert len(slapd.get_group('testgroup')) == 1
 
