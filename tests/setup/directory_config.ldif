@@ -1,7 +1,8 @@
+# all of the {SSHA} hashes here are "password" for testing
+
 dn: olcDatabase={0}config,cn=config
 changetype: modify
 add: olcRootPW
-# password is "password" for tests
 olcRootPW: {SSHA}1C5a3gCa9FoahiZqHUMN6z/DMyDYB0sL
 
 dn: olcDatabase={1}monitor,cn=config
@@ -12,22 +13,22 @@ olcAccess: {0}to *
   by dn.base="cn=Manager,dc=ezldap,dc=io" read
   by * none
 
-dn: olcDatabase={2}hdb,cn=config
+dn: olcDatabase={2}mdb,cn=config
 changetype: modify
 replace: olcSuffix
 olcSuffix: dc=ezldap,dc=io
 
-dn: olcDatabase={2}hdb,cn=config
+dn: olcDatabase={2}mdb,cn=config
 changetype: modify
 replace: olcRootDN
 olcRootDN: cn=Manager,dc=ezldap,dc=io
 
-dn: olcDatabase={2}hdb,cn=config
+dn: olcDatabase={2}mdb,cn=config
 changetype: modify
-# password is "password" for tests
+replace: olcRootPW
 olcRootPW: {SSHA}1C5a3gCa9FoahiZqHUMN6z/DMyDYB0sL
 
-dn: olcDatabase={2}hdb,cn=config
+dn: olcDatabase={2}mdb,cn=config
 changetype: modify
 add: olcAccess
 olcAccess: {0}to attrs=userPassword,shadowLastChange

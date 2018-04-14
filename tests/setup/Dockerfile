@@ -16,4 +16,4 @@ RUN cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG \
 
 EXPOSE 389 636
 
-ENTRYPOINT ["slapd", "-h ldap:/// ldaps:/// ldapi:///"]
+ENTRYPOINT ["slapd", "-h ldap:/// ldaps:/// ldapi:///", "-d256"]
