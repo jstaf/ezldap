@@ -15,7 +15,7 @@ def config(path=None):
     ~/.ezldap/config.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
     '''
     if path is not None:
-        return yaml.load(os.path.expanduser(path))
+        return yaml.load(open(os.path.expanduser(path)))
     elif os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
         return yaml.load(open(os.path.expanduser('~/.ezldap/config.yml')))
     else:

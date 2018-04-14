@@ -3,10 +3,9 @@ Shared fixtures for multiple test modules.
 (pytest autodetects this from its filename.)
 '''
 
-import os
-import json
 import subprocess
 import pytest
+import ezldap
 
 
 def ping_slapd():
@@ -14,7 +13,7 @@ def ping_slapd():
     Return true if we can contact slapd.
     '''
     try:
-        stdout = subprocess.check_output('ldapsearch -x', shell=True)
+        stdout = subprocess.check_output('ldapsearch -x -b dc=ezldap,dc=io', shell=True)
         return True
     except subprocess.CalledProcessError:
         return False
@@ -22,5 +21,8 @@ def ping_slapd():
 
 @pytest.fixture(scope='session')
 def slapd(docker_ip, docker_services):
-    docker_services.wait_until_responsive(timeout=15, pause=0.5, check=ping_slapd)
+    '''
+    Spin up an OpenLDAP slapd instance via Docker for use by tests.
+    '''
+    docker_services.wait_until_responsive(timeout=15, pause=0.1, check=ping_slapd)
     return ezldap.auto_bind(ezldap.config('tests/ezldap_config.yml'))
