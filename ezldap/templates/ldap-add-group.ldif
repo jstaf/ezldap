@@ -1,6 +1,5 @@
 dn: cn=$groupname,$groupdn
 objectClass: top
 objectClass: posixGroup
-objectClass: extensibleObject
 cn: $groupname
 gidNumber: $gid

@@ -1,10 +1,12 @@
 .vscode/
 .cache/
 .eggs/
+.ropeproject/
 .pytest_cache/
 __pycache__/
 python-ldap-test-*/
 slapd/
+slapd-runtime/
 *.egg-info/
 *.swp
 *.pyc

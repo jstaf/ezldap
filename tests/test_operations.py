@@ -11,12 +11,16 @@ def slapd():
     instance = slapdtest.SlapdObject()
     instance.openldap_schema_files = (
         'core.schema',
+        'cosine.schema',
         'nis.schema',
         'inetorgperson.schema'
     )
     instance.start()
     # ldap OUs have not been setup yet in test instance, so we need to create them
     instance.ldapadd(open('tests/setup.ldif').read())
+    #instance.ldapadd(open('/etc/openldap/schema/cosine.ldif').read())
+    #instance.ldapadd(open('/etc/openldap/schema/nis.ldif').read())
+    #instance.ldapadd(open('/etc/openldap/schema/inetorgperson.ldif').read())
     
     global config    
     config = {
