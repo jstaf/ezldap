@@ -1,7 +1,8 @@
 version: '3'
 services:
   slapd:
-    build: .
+    #build: .
+    image: jstaf/ezldap
     ports:
       - '389:389'
       - '636:636'
