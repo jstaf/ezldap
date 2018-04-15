@@ -5,7 +5,6 @@ Ideally the user should have to do nothing aside from specify a password.
 
 import os
 import subprocess
-
 import yaml
 
 def config(path=None):
@@ -23,9 +22,9 @@ def config(path=None):
 
 
 def guess_config():
-    base = get_base_dn()
+    base = get_ldap_conf_val('BASE')
     conf = {
-        'host': get_ldap_host(),
+        'host': get_ldap_conf_val('URI'),
         'binddn': get_current_dn(),
         'bindpw': None,
         'peopledn': 'ou=People,{}'.format(base),
@@ -51,24 +50,19 @@ def readlines_to_dict(list_of_strings):
     return conf
 
 
-def get_ldap_host():
-    '''
-    Retrieves the LDAP host from /etc/openldap/ldap.conf.
-    '''
-    try:
-        ldap_conf = readlines_to_dict(open('/etc/openldap/ldap.conf').readlines())
-        return ldap_conf['URI'][0]
-    except KeyError:
+def get_ldap_conf_val(field):
+    if os.path.exists('/etc/openldap/ldap.conf'):
+        # redhat distros
+        path = '/etc/openldap/ldap.conf'
+    elif os.path.exists('/etc/ldap/ldap.conf'):
+        # ubuntu
+        path = '/etc/ldap/ldap.conf'
+    else:
         return None
 
-
-def get_base_dn():
-    '''
-    Retrieves the base dn from /etc/openldap/ldap.conf.
-    '''
-    ldap_conf = readlines_to_dict(open('/etc/openldap/ldap.conf').readlines())
     try:
-        return ldap_conf['BASE'][0]
+        ldap_conf = readlines_to_dict(open(path).readlines())
+        return ldap_conf[field][0]
     except KeyError:
         return None
 
@@ -85,7 +79,3 @@ def get_current_dn():
         return whoami_dict['dn:'][0]
     except KeyError:
         return None
-
-
-def get_current_group_dn():
-    return None
