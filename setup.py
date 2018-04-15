@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='ezldap',
-    version='0.1',
+    version='0.3',
     description='Scripts and Python bindings for easy LDAP operations.',
     url='https://github.com/jstaf/ezldap',
     author='Jeff Stafford',
