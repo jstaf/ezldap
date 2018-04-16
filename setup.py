@@ -5,6 +5,8 @@ setup(
     name='ezldap',
     version='0.3',
     description='Scripts and Python bindings for easy LDAP operations.',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     url='https://github.com/jstaf/ezldap',
     author='Jeff Stafford',
     author_email='jeff.stafford@queensu.ca',

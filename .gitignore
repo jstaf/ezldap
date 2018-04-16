@@ -4,9 +4,7 @@
 .ropeproject/
 .pytest_cache/
 __pycache__/
-python-ldap-test-*/
-slapd/
-slapd-runtime/
+dist/
 *.egg-info/
 *.swp
 *.pyc
