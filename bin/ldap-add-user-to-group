@@ -9,14 +9,10 @@ import ezldap
 def main():
     parser = argparse.ArgumentParser(
             description='Add a user to an LDAP group.')
-    parser.add_argument('username', nargs=1, type=str, 
+    parser.add_argument('username', nargs=1, type=str,
             help='An LDAP username to add to a group.')
     parser.add_argument('groupname', nargs=1, type=str,
             help='An LDAP groupname to add to a group.')
-    parser.add_argument('-n', '--dry-run', default=False, 
-            const=True, action='store_const', 
-            help='Whether or not to do a dry-run ' 
-                 '(print changes without executing).')
     argv = parser.parse_args()
     user = argv.username[0]
     group = argv.groupname[0]

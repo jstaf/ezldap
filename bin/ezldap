@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import ezldap
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='ezldap CLI - Perform various options on an LDAP directory.',
+        # not sure why the formatter width can't be resized...
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, indent_increment=0))
+    parser.add_argument('-v', '--version', action='version', version=
+        '%(prog)s version {}'.format(ezldap.__version__))
+    subparsers = parser.add_subparsers(title='Valid commands', metavar='')
+
+    # subparsers follow
+    config = subparsers.add_parser('config',
+        help='Configure ezldap (configs are stored in ~/.ezldap/).',
+        description=
+        'Create a set of configs for ezldap scripts under ~/.ezldap/. '
+        'To delete your ezldap config, just delete the ~/.ezldap folder.')
+    config.add_argument('-f', '--force', default=False, const=True, action='store_const',
+        help='Whether to force overwriting existing config files in ~/.ezldap '
+        '(namely LDIF templates).')
+
+    search_dn = subparsers.add_parser('search_dn', help='Search for entities by DN.',
+        description='Search LDAP tree for a DN keyword and print resulting LDIF.')
+    search_dn.add_argument('keyword', nargs='?', type=str, default='',
+        help='Keyword to search DNs by (case-sensitive). '
+        'Dumps entire directory if not supplied.')
+
+    search = subparsers.add_parser('search', help='Search for entities by LDAP filter.')
+    #TODO needs implementation
+
+    add_user = subparsers.add_parser('add_user', help='Add a user.',
+        description="Creates an LDAP user and add to a group. "
+        "Creates a same-named LDAP group as well if no group specified. "
+        "Prints the randomly generated password to stdout.")
+    add_user.add_argument('username', nargs=1, type=str,
+        help="Username to create.")
+    add_user.add_argument('groupname', nargs='?', type=str, default=None,
+        help="Groupname to add user to. If omitted, creates same-named LDAP group. "
+            "If the group is a local group, a new LDAP group will not be created "
+            "and an ldap add group operation will not be perfomed.")
+
+    add_group = subparsers.add_parser('add_group', help='Add a group.',
+        description="Creates an LDAP group.")
+    add_group.add_argument('groupname', nargs=1, type=str,
+        help='LDAP group name to create.')
+    add_group.add_argument('gid', nargs='?', type=str, default=None,
+        help='GID number of group to create. '
+        'If not supplied, uses next available GID number.')
+
+    add_to_group = subparsers.add_parser('add_to_group',
+        help='Add a user to a group.',
+        description='Add a user to an LDAP group.')
+    add_to_group.add_argument('username', nargs=1, type=str,
+        help='An LDAP username to add to a group.')
+    add_to_group.add_argument('groupname', nargs=1, type=str,
+        help='An LDAP groupname to add to a group.')
+
+    change_home = subparsers.add_parser('change_home',
+        help="Change a user's home directory.",
+        description="Change a user's home directory.")
+    change_home.add_argument('username', nargs=1, type=str,
+        help='User to change homeDirectory for.')
+    change_home.add_argument('homedir', nargs=1, type=str,
+        help='New home directory.')
+
+    change_password = subparsers.add_parser('change_passwd',
+        help="Change or reset a user's password.",
+        description='Change or randomize a user password.')
+    change_password.add_argument('username', nargs=1, type=str,
+        help='User to reset password for.')
+    change_password.add_argument('-s', '--specify-password',
+        default=False, const=True, action='store_const',
+        help='Specify a password instead of randomizing it.')
+
+    check_password = subparsers.add_parser('check_passwd',
+        help="Check a user's password.",
+        description='Verify that an LDAP password is correct. '
+        'Currently only works with SSHA-encrypted passwords.')
+    check_password.add_argument('username', nargs='?', type=str,
+        help='If a username is supplied, this will check that user\'s password. '
+        'You will otherwise be prompted for the password hash.')
+
+    argv = parser.parse_args()
+
+
+if __name__ == '__main__':
+    main()
