@@ -256,7 +256,9 @@ class LDAP(LDAPObject):
 
 
 def to_bytes(value):
-    if not isinstance(value, bytes):
+    if value is None:
+        return None
+    elif not isinstance(value, bytes):
         return str(value).encode()
     else:
         return value

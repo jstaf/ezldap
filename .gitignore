@@ -3,6 +3,7 @@
 .eggs/
 .ropeproject/
 .pytest_cache/
+.ipynb_checkpoints/
 __pycache__/
 dist/
 *.egg-info/
