@@ -1,90 +1,265 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import argparse
+import getpass
+import pkg_resources
+
+import yaml
 import ezldap
 
 def main():
     parser = argparse.ArgumentParser(
         description='ezldap CLI - Perform various options on an LDAP directory.',
         # not sure why the formatter width can't be resized...
-        formatter_class=lambda prog: argparse.HelpFormatter(prog, indent_increment=0))
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, indent_increment=1))
     parser.add_argument('-v', '--version', action='version', version=
         '%(prog)s version {}'.format(ezldap.__version__))
+    parser.set_defaults(func=lambda x: parser.print_help())
     subparsers = parser.add_subparsers(title='Valid commands', metavar='')
 
     # subparsers follow
-    config = subparsers.add_parser('config',
+    config_parser = subparsers.add_parser('config',
         help='Configure ezldap (configs are stored in ~/.ezldap/).',
-        description=
-        'Create a set of configs for ezldap scripts under ~/.ezldap/. '
+        description='Create a set of configs for ezldap scripts under ~/.ezldap/. '
         'To delete your ezldap config, just delete the ~/.ezldap folder.')
-    config.add_argument('-f', '--force', default=False, const=True, action='store_const',
+    config_parser.add_argument('-f', '--force', default=False, const=True, action='store_const',
         help='Whether to force overwriting existing config files in ~/.ezldap '
         '(namely LDIF templates).')
+    config_parser.set_defaults(func=config)
 
-    search_dn = subparsers.add_parser('search_dn', help='Search for entities by DN.',
+    search_dn_parser = subparsers.add_parser('search_dn', help='Search for entities by DN.',
         description='Search LDAP tree for a DN keyword and print resulting LDIF.')
-    search_dn.add_argument('keyword', nargs='?', type=str, default='',
+    search_dn_parser.add_argument('keyword', nargs='?', type=str, default='',
         help='Keyword to search DNs by (case-sensitive). '
         'Dumps entire directory if not supplied.')
+    search_dn_parser.set_defaults(func=search_dn)
 
     search = subparsers.add_parser('search', help='Search for entities by LDAP filter.')
     #TODO needs implementation
 
-    add_user = subparsers.add_parser('add_user', help='Add a user.',
+    add_user_parser = subparsers.add_parser('add_user', help='Add a user.',
         description="Creates an LDAP user and add to a group. "
         "Creates a same-named LDAP group as well if no group specified. "
         "Prints the randomly generated password to stdout.")
-    add_user.add_argument('username', nargs=1, type=str,
+    add_user_parser.add_argument('username', nargs=1, type=str,
         help="Username to create.")
-    add_user.add_argument('groupname', nargs='?', type=str, default=None,
+    add_user_parser.add_argument('groupname', nargs='?', type=str, default=None,
         help="Groupname to add user to. If omitted, creates same-named LDAP group. "
-            "If the group is a local group, a new LDAP group will not be created "
-            "and an ldap add group operation will not be perfomed.")
+        "If the group is a local group, a new LDAP group will not be created "
+        "and an ldap add group operation will not be perfomed.")
+    add_user_parser.set_defaults(func=add_user)
 
-    add_group = subparsers.add_parser('add_group', help='Add a group.',
+    add_group_parser = subparsers.add_parser('add_group', help='Add a group.',
         description="Creates an LDAP group.")
-    add_group.add_argument('groupname', nargs=1, type=str,
+    add_group_parser.add_argument('groupname', nargs=1, type=str,
         help='LDAP group name to create.')
-    add_group.add_argument('gid', nargs='?', type=str, default=None,
+    add_group_parser.add_argument('gid', nargs='?', type=str, default=None,
         help='GID number of group to create. '
         'If not supplied, uses next available GID number.')
+    add_group_parser.set_defaults(func=add_group)
 
-    add_to_group = subparsers.add_parser('add_to_group',
+    add_to_group_parser = subparsers.add_parser('add_to_group',
         help='Add a user to a group.',
         description='Add a user to an LDAP group.')
-    add_to_group.add_argument('username', nargs=1, type=str,
+    add_to_group_parser.add_argument('username', nargs=1, type=str,
         help='An LDAP username to add to a group.')
-    add_to_group.add_argument('groupname', nargs=1, type=str,
+    add_to_group_parser.add_argument('groupname', nargs=1, type=str,
         help='An LDAP groupname to add to a group.')
+    add_to_group_parser.set_defaults(func=add_to_group)
 
-    change_home = subparsers.add_parser('change_home',
+    change_home_parser = subparsers.add_parser('change_home',
         help="Change a user's home directory.",
         description="Change a user's home directory.")
-    change_home.add_argument('username', nargs=1, type=str,
+    change_home_parser.add_argument('username', nargs=1, type=str,
         help='User to change homeDirectory for.')
-    change_home.add_argument('homedir', nargs=1, type=str,
+    change_home_parser.add_argument('homedir', nargs=1, type=str,
         help='New home directory.')
+    change_home_parser.set_defaults(func=change_home)
 
-    change_password = subparsers.add_parser('change_passwd',
+    change_pw_parser = subparsers.add_parser('change_pw',
         help="Change or reset a user's password.",
         description='Change or randomize a user password.')
-    change_password.add_argument('username', nargs=1, type=str,
+    change_pw_parser.add_argument('username', nargs=1, type=str,
         help='User to reset password for.')
-    change_password.add_argument('-s', '--specify-password',
+    change_pw_parser.add_argument('-s', '--specify-password',
         default=False, const=True, action='store_const',
         help='Specify a password instead of randomizing it.')
+    change_pw_parser.set_defaults(func=change_pw)
 
-    check_password = subparsers.add_parser('check_passwd',
+    check_pw_parser = subparsers.add_parser('check_pw',
         help="Check a user's password.",
         description='Verify that an LDAP password is correct. '
         'Currently only works with SSHA-encrypted passwords.')
-    check_password.add_argument('username', nargs='?', type=str,
+    check_pw_parser.add_argument('username', nargs='?', type=str,
         help='If a username is supplied, this will check that user\'s password. '
         'You will otherwise be prompted for the password hash.')
+    check_pw_parser.set_defaults(func=check_pw)
 
     argv = parser.parse_args()
+    argv.func(argv)
+
+
+def add_group(argv):
+    gid = argv.gid
+    with ezldap.auto_bind() as con:
+        if gid is None:
+            gid = con.next_gidn()
+
+        con.add_group(argv.groupname[0], gid=gid)
+
+
+def add_to_group(argv):
+    with ezldap.auto_bind() as con:
+        con.add_user_to_group(argv.username[0], argv.groupname[0])
+
+
+def add_user(argv):
+    user = argv.username[0]
+    group = argv.groupname
+
+    with ezldap.auto_bind() as con:
+        query = con.search_safe(filter='cn={}'.format(group))
+        group_is_local = len(query) == 0 and group is not None
+
+        passwd = ezldap.random_passwd()
+        print('Password for {} is: {}'.format(user, passwd))
+
+        if group_is_local:
+            try:
+                gr_gid = grp.getgrnam(group).gr_gid
+            except KeyError:
+                sys.exit('Group does not exist.')
+
+            print('Creating user {}, member of local group {}...'.format(user, group))
+            con.add_user(user, None, passwd, gid=gr_gid)
+        else:
+            if group is None:
+                group = user
+                if len(con.search_safe(filter='cn={}'.format(user))) == 0:
+                    print('Creating LDAP group {}...'.format(group))
+                    con.add_group(group)
+
+            print('Creating user {}, member of LDAP group {}'.format(user, group))
+            con.add_user(user, group, passwd)
+            con.add_user_to_group(user, group)
+
+
+def change_home(argv):
+    with ezldap.auto_bind() as con:
+        dn = con.get_user(argv.username[0])[0][0]
+        con.modify_replace(dn, 'homeDirectory', argv.homedir[0].encode())
+
+
+def change_shell(argv):
+    with ezldap.auto_bind() as con:
+        dn = con.get_user(argv.username[0])[0][0]
+        con.modify_replace(dn, 'loginShell', argv.shell[0].encode())
+
+
+def change_pw(argv):
+    user = argv.username[0]
+    if argv.specify_password:
+        print('Specify new password for {}...'.format(user))
+        passwd = getpass.getpass()
+    else:
+        passwd = ezldap.random_passwd()
+        print('New password for {} - {}'.format(user, passwd))
+
+    ssha = ezldap.ssha_passwd(passwd).encode()
+
+    with ezldap.auto_bind() as con:
+        try:
+            dn = con.get_user(user)[0][0]
+        except IndexError:
+            sys.exit('User does not exist.')
+
+        con.modify_replace(dn, 'userPassword', ssha)
+
+
+def check_pw(argv):
+    if argv.username is None:
+        print('Enter SSHA password hash...')
+        ssha = getpass.getpass()
+    else:
+        with ezldap.auto_bind() as con:
+            query = con.get_user(argv.username)
+            if len(query) != 1:
+                sys.exit('User not found.')
+
+            ssha = ezldap.get_attrib_list(query, 'userPassword')[0]
+
+    print('\nEnter password to verify...')
+    passwd = getpass.getpass()
+
+    if ezldap.ssha_check(ssha, passwd):
+        print('\nPasswords match!')
+    else:
+        print('\nPasswords do not match. :\'(')
+
+
+def config(argv):
+    if os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
+        conf = ezldap.config()
+    else:
+        conf = ezldap.guess_config()
+
+    prompts = {
+        'host': 'LDAP host',
+        'binddn': 'Bind DN',
+        'bindpw': 'Bind password (leave blank to prompt for password)',
+        'peopledn': 'User base dn',
+        'groupdn': 'Group base dn',
+        'homedir': 'Default home directory for new users'
+    }
+
+    for k, v in prompts.items():
+        conf[k] = interactive_conf(v, conf[k])
+
+    os.makedirs(os.path.expanduser('~/.ezldap'), mode=0o700, exist_ok=True)
+    yaml.dump(conf,
+        stream=open(os.path.expanduser('~/.ezldap/config.yml'), 'w'),
+        default_flow_style=False)
+
+    for template in pkg_resources.resource_listdir('ezldap', 'templates'):
+        if argv.force or not os.path.exists(os.path.expanduser('~/.ezldap/' + template)):
+            content = pkg_resources.resource_string('ezldap', 'templates/' + template).decode()
+            with open(os.path.expanduser('~/.ezldap/' + template), 'w') as fout:
+                fout.write(content)
+
+
+def interactive_conf(prompt, default=None):
+    '''
+    Prompt the user for a config value, press ENTER for default val.
+    '''
+    if default is None:
+        val = input('{}: '.format(prompt))
+    else:
+        val = input('{} [{}]: '.format(prompt, default))
+
+    if val == '':
+        return default
+    else:
+        return val
+
+
+def search_dn(argv):
+    key = argv.keyword
+    with ezldap.auto_bind() as con:
+        base_dn = con.base_dn()
+        # retrieves everything...
+        # might not work against huge LDAP directories due to paging limits
+        #TODO make a better implementation using ldap filters
+        query = con.search_s(base_dn, ldap.SCOPE_SUBTREE)
+
+        # grab all objects with our search key in the DN
+        results = [entry for entry in query if key in entry[0]]
+
+        # dump results to ldif
+        ldif = ezldap.LDIF()
+        ldif.populate(results)
+        ldif.write()
 
 
 if __name__ == '__main__':
