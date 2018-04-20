@@ -78,6 +78,15 @@ def main():
         help='New home directory.')
     change_home_parser.set_defaults(func=change_home)
 
+    change_shell_parser = subparsers.add_parser('change_shell',
+        help="Change a user's default shell.",
+        description="Change a user's default shell.")
+    change_shell_parser.add_argument('username', nargs=1, type=str,
+        help='User to change loginShell for.')
+    change_shell_parser.add_argument('shell', nargs=1, type=str,
+        help='Desired shell for user.')
+    change_shell_parser.set_defaults(func=change_shell)
+
     change_pw_parser = subparsers.add_parser('change_pw',
         help="Change or reset a user's password.",
         description='Change or randomize a user password.')
