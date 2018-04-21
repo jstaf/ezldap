@@ -37,3 +37,10 @@ def test_add_user(slapd, config):
     # is the password set correctly?
     passwd = query[0][1]['userPassword'][0].decode()
     assert ezldap.ssha_check(passwd, 'test1234')
+
+
+#def test_add_to_group(slapd):
+#    slapd.add_group('group1')
+#    slapd.add_group('user3')
+#    slapd.add_to_group('user3', 'group1')
+#    query = slapd.get_group('')
