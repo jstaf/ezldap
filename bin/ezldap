@@ -29,15 +29,20 @@ def main():
         '(namely LDIF templates).')
     config_parser.set_defaults(func=config)
 
-    search_dn_parser = subparsers.add_parser('search_dn', help='Search for entities by DN.',
+    search_dn_parser = subparsers.add_parser('search_dn',
+        help='Search for entities by DN keyword.',
         description='Search LDAP tree for a DN keyword and print resulting LDIF.')
     search_dn_parser.add_argument('keyword', nargs='?', type=str, default='',
         help='Keyword to search DNs by (case-sensitive). '
         'Dumps entire directory if not supplied.')
     search_dn_parser.set_defaults(func=search_dn)
 
-    search = subparsers.add_parser('search', help='Search for entities by LDAP filter.')
-    #TODO needs implementation
+    search_parser = subparsers.add_parser('search',
+        help='Search for entities by LDAP filter.',
+        description='Search for objects in a directory using LDAP filters.')
+    search_parser.add_argument('filter', nargs=1, type=str, default='(objectClass=*)',
+        help='LDAP filter to search by, for example: (objectClass=*)')
+    search_parser.set_defaults(func=search)
 
     add_user_parser = subparsers.add_parser('add_user', help='Add a user.',
         description="Creates an LDAP user and add to a group. "
@@ -246,7 +251,7 @@ def interactive_conf(prompt, default=None):
 
 def search(argv):
     with ezldap.auto_bind() as con:
-        query = con.search_safe(filter='({})'.format(argv.filter[0]))
+        query = con.search_safe(filter=argv.filter[0])
         ldif = ezldap.LDIF()
         ldif.populate(results)
         ldif.write()
