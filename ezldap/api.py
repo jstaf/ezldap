@@ -205,7 +205,7 @@ class LDAP(LDAPObject):
         self.ldif_add(ldif)
 
 
-    def add_user_to_group(self, username, groupname,
+    def add_to_group(self, username, groupname,
         ldif_path='~/.ezldap/ldap-add-user-to-group.ldif', **kwargs):
         """
         Adds a user to a group.
