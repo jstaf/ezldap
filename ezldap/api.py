@@ -5,27 +5,16 @@ Bind to an LDAP directory and perform various operations.
 import sys
 import getpass
 import re
-from collections import OrderedDict
 
+# python-ldap
 import ldap
 import ldap.modlist
-from ldap.ldapobject import LDAPObject
+
+import ldap3
 
 from .ldif import LDIF
 from .password import ssha_passwd
 from .config import config
-
-
-def get_attrib_list(query, name):
-    """
-    Grab all of a certain attribute from an LDAP search query.
-    """
-    attrs = [obj[1][name] for obj in query]
-    # determine if attrs should be unpacked and decoded
-    if all([len(attr) == 1 for attr in attrs]):
-        attrs = [attr[0].decode() for attr in attrs]
-
-    return attrs
 
 
 def auto_bind(conf=None):
@@ -35,37 +24,30 @@ def auto_bind(conf=None):
     if conf is None:
         conf = config()
 
-    uri = conf['host']
-    binding = LDAP(uri)
-    if uri.startswith('ldaps://'):
-        try:
-            binding.start_tls_s()
-        except ldap.PROTOCOL_ERROR as e:
-            raise ldap.PROTOCOL_ERROR('TLS appears to be unsupported.') from e
-        except ldap.CONNECT_ERROR as e:
-            # give some helpful advice and rethrow
-            raise ldap.CONNECT_ERROR(
-                'Your certificate is untrusted - this is either an SELinux issue or '
-                'your LDAP SSL has not been setup correctly.') from e
-
-    if conf['bindpw'] is None:
+    if conf['binddn'] is not None and conf['bindpw'] is None:
         print('Enter bind DN password...', file=sys.stderr)
         conf['bindpw'] = getpass.getpass()
 
-    binding.simple_bind_s(conf['binddn'], conf['bindpw'])
-
-    return binding
+    return LDAP(conf['host'], user=conf['binddn'], password=conf['bindpw'])
 
 
-class LDAP(LDAPObject):
+class LDAP(ldap3.Connection):
     '''
     An object-oriented wrapper around an LDAP connection.
     Used to make pyldap's LDAPObject even easier to use.
     To automatically create a binding use auto_bind() instead.
     '''
 
-    def __init__(self, host):
-        super().__init__(host, trace_file=sys.stderr, trace_stack_limit=None)
+    def __init__(self, host, user=None, password=None, authentication=ldap3.SIMPLE):
+        self.server = ldap3.Server(host, get_info=ldap3.ALL)
+        if user is None:
+            # anonymous bind
+            super().__init__(self.server)
+        else:
+            super().__init__(self.server, user=user, password=password, authentication=authentication)
+        # TODO negotiate TLS before binding in all cases,
+        # only cleartext in case of user override
+        self.bind()
 
 
     def __enter__(self):
@@ -73,64 +55,124 @@ class LDAP(LDAPObject):
 
 
     def __exit__(self, type_, value, traceback):
-        """
-        Auto-unbind when used with "with"
-        """
-        self.unbind_s()
+        '''
+        Auto-unbind when used with "with" keyword.
+        '''
+        self.unbind()
+
+
+    def who_am_i(self):
+        '''
+        Easier wrapper around who_am_i().
+        '''
+        return self.extend.standard.who_am_i()
 
 
     def base_dn(self):
         """
         Detect the base DN from an LDAP connection.
-        Uses the bind DN as a "hint".
         """
-        whoami = self.whoami_s()
-        return re.findall(r'dc=.+$', whoami)[0]
+        return self.server.info.naming_contexts[0]
 
 
-    def search_safe(self, basedn=None, filter='(objectClass=*)',
-            scope=ldap.SCOPE_SUBTREE):
+    def search_list(self, search_filter='(objectClass=*)',
+                    attributes=ldap3.ALL_ATTRIBUTES, search_base=None, **kwargs):
         '''
-        A wrapper around search_s that returns empty lists instead of exceptions
-        when no results are found. If basedn is None, the directory base DN will
-        be used.
+        A wrapper around search() with better defaults and output format.
+        A list of dictionaries will be returned, with one dict per output object.
+        If search_base is None, the directory base DN will be used.
         '''
-        if basedn is None:
-            basedn = self.base_dn()
+        if search_base is None:
+            search_base = self.base_dn()
 
-        #TODO - implement paging limits to avoid ldap.SIZELIMIT_EXCEEDED
-        #for non admin binds
+        self.search(search_base, search_filter, attributes=attributes, **kwargs)
+        query = []
+        for res in self.response:
+            result = {'dn': [res['dn']]}
+            result.update(res['attributes'])
+            query.append(result)
 
+        return query
+
+
+    def search_list_t(self, search_filter='(objectClass=*)',
+                      attributes=ldap3.ALL_ATTRIBUTES, search_base=None,
+                      unpack_lists=True, unpack_delimiter='|', **kwargs):
+        '''
+        A utility function that returns the transposed result of search_list()
+        (a dict of lists, with one list per attribute.)
+        This is very useful for tasks like retrieving all uidNumbers currently
+        assigned or emails used by users. The DN of each entry is always output.
+        '''
+        response = self.search_list(search_filter, attributes=attributes,
+            search_base=search_base, **kwargs)
+
+        all_attribs = {'dn'}
+        if attributes == ldap3.ALL_ATTRIBUTES:
+            # iterate through and determine all possible attributes returned
+            for res in response:
+                all_attribs.update(res.keys())
+        else:
+            all_attribs.update(attributes)
+
+        query = {attrib: [] for attrib in all_attribs}
+
+        for res in response:
+            for k in all_attribs:
+                try:
+                    v = res[k]
+                    if unpack_lists and isinstance(v, list):
+                        v = unpack_delimiter.join(v)
+                except KeyError:
+                    v = None
+
+                query[k].append(v)
+
+        return query
+
+
+
+    def search_df(self, search_filter='(objectClass=*)',
+                  attributes=ldap3.ALL_ATTRIBUTES, search_base=None, **kwargs):
+        '''
+        A convenience function to search an LDAP directory and return a Pandas
+        DataFrame. Very useful for analyzing the contents of your directory,
+        computing stats, etc. Requires the pandas package to be installed.
+        '''
         try:
-            return self.search_ext_s(basedn, scope, filterstr=filter)
-        except ldap.NO_SUCH_OBJECT:
-            return []
+            from pandas import DataFrame
+        except ModuleNotFoundError as e:
+            raise ModuleNotFoundError('This function requires the pandas package to be installed.') from e
+
+        query = self.search_list_t(search_filter, attributes=attributes,
+            search_base=search_base, **kwargs)
+        return DataFrame(query)
 
 
-    def next_uidn(self, uidstart=10000):
+
+    def search_ldif():
+        #TODO needs implementation
+        pass
+
+
+    def next_uidn(self, search_filter='(objectClass=posixAccount)',
+        search_base=None, uid_start=10000, uid_attribute='uidNumber'):
         """
         Determine the next available uid number in a directory tree.
         """
-        users = self.search_safe(self.base_dn(), '(uid=*)')
-        if len(users) == 0:
-            return uidstart
+        users = self.search_list_t(search_filter, uid_attribute, search_base=search_base)
+        if len(users['dn']) == 0:
+            return uid_start
 
-        uidns = get_attrib_list(users, 'uidNumber')
-        uidns = [int(uidn) for uidn in uidns]
-        return max(uidns) + 1
+        return max(users[uid_attribute]) + 1
 
 
-    def next_gidn(self, gidstart=10000):
+    def next_gidn(self, search_filter='(objectClass=posixGroup)',
+        search_base=None, gid_start=10000, gid_attribute='gidNumber'):
         """
         Determine the next available gid number in a directory tree.
         """
-        groups = self.search_safe(self.base_dn(), '(objectClass=posixGroup)')
-        if len(groups) == 0:
-            return gidstart
-
-        gidns = get_attrib_list(groups, 'gidNumber')
-        gidns = [int(gidn) for gidn in gidns]
-        return max(gidns) + 1
+        return self.next_uidn(search_filter, search_base, gid_start, gid_attribute)
 
 
     def get_user(self, user, basedn=None, index='uid'):
@@ -140,17 +182,14 @@ class LDAP(LDAPObject):
         if basedn is None:
             basedn = self.base_dn()
 
-        return self.search_safe(basedn, '({}={})'.format(index, user))
+        return self.search_list(basedn, '({}={})'.format(index, user))
 
 
     def get_group(self, group, basedn=None, index='cn'):
         '''
         Return a given group. Searches entire directory if no base search dn given.
         '''
-        if basedn is None:
-            basedn = self.base_dn()
-
-        return self.search_safe(basedn, '({}={})'.format(index, group))
+        return self.get_user(basedn, '({}={})'.format(index, group))
 
 
     def ldif_add(self, ldif):

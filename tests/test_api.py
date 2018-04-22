@@ -7,7 +7,34 @@ import ezldap
 prefix = 'ezldap/templates/'
 
 def test_bind_success(slapd):
-    assert slapd.whoami_s() == 'dn:cn=Manager,dc=ezldap,dc=io'
+    assert slapd.who_am_i() == 'dn:cn=Manager,dc=ezldap,dc=io'
+
+
+def test_base_dn(slapd):
+    # should fail on anonymous bind
+    assert slapd.base_dn() == 'dc=ezldap,dc=io'
+
+
+def test_search_list(slapd):
+    assert len(slapd.search_list('(objectClass=organizationalUnit)')) == 2
+    assert len(slapd.search_list('(objectClass=applicationProcess)')) == 0
+
+
+def test_search_list_t(slapd):
+    query = slapd.search_list_t('(objectClass=organizationalUnit)')
+    assert set(query['ou']) == {'Group', 'People'}
+    fail = slapd.search_list_t('(objectClass=applicationProcess)')
+    assert set(fail['dn']) == set()
+
+
+def test_search_df(slapd):
+    # dump entire DIT
+    df = slapd.search_df()
+    ezldapio = df[df['dn'] == 'dc=ezldap,dc=io']
+    assert '|' not in ezldapio['dc'].iloc[0]
+    assert '|' in ezldapio['objectClass'].iloc[0]
+    assert 'organization' in ezldapio['objectClass'].iloc[0]
+    assert 'dcObject' in ezldapio['objectClass'].iloc[0]
 
 
 def test_add_group(slapd, config):

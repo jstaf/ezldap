@@ -19,10 +19,12 @@ setup(
     include_package_data=True,
     install_requires=[
         'PyYAML',
-        'python-ldap'
+        'python-ldap',
+        'ldap3'
     ],
     setup_requires=['pytest-runner'],
     tests_require=[
+        'pandas',
         'pytest',
         'pytest-docker',
         'docker-compose'

@@ -221,7 +221,7 @@ def config(argv):
 
     prompts = {
         'host': 'LDAP host',
-        'binddn': 'Bind DN',
+        'binddn': 'Bind DN (leave blank for anonymous bind)',
         'bindpw': 'Bind password (leave blank to prompt for password)',
         'peopledn': 'User base dn',
         'groupdn': 'Group base dn',

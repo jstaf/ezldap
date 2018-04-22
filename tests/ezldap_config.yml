@@ -1,4 +1,4 @@
-host: ldap:///
+host: ldap://localhost
 binddn: cn=Manager,dc=ezldap,dc=io
 bindpw: password
 groupdn: ou=Group,dc=ezldap,dc=io
