@@ -5,53 +5,50 @@ Read and write LDIF files to/from a dict
 import sys
 import io
 import os
+import re
 from string import Template
 
-class LDIF:
+def read_ldif(path, replacements=None):
+    '''
+    Read an LDIF file into a list of dicts appropriate for use with ezldap.
+    '''
+    # read into a string buffer first
+    path = os.path.expanduser(path)
+    if replacements is None:
+        content = open(path)
+    else:
+        template = Template(open(path).read())
+        content = io.StringIO(template.substitute(replacements))
 
-    def __init__(self, path=None, replacements=None):
-        '''
-        Create a new LDIF reader.
-        If path is None, you are expected to populate self.entries.
-        '''
-        self.entries = []
+    entries = []
+    entry = {}
+    for line in content:
+        if line[0] in {'-', '#'}:
+            continue
+        elif re.match(r'dn:', line):
+            # new dn- add last entry, and start a new one
+            if 'dn' in entry.keys():
+                entries.append(entry)
 
-        if path is not None:
-            # read into a string buffer first
-            path = os.path.expanduser(path)
-            if replacements is None:
-                content = open(path)
-            else:
-                template = Template(open(path).read())
-                content = io.StringIO(template.substitute(replacements))
+            entry = {}
 
-            #TODO reimplement
+        match = re.match(r'(\w+):\s*(.+)', line)
+        if match:
+            key = match[1]
+            if key not in entry.keys():
+                entry[key] = []
 
-    def __str__(self):
-        # dumps the output of ldif.write() to a string buffer
-        strbuf = io.StringIO()
-        self.write(strbuf)
-        strbuf.seek(0)
-        out = ''.join(strbuf.readlines())
-        strbuf.close()
-        return out
+            entry[key].append(match[2].strip())
 
+    # last ldif object won't be added otherwise
+    if 'dn' in entry.keys():
+        entries.append(entry)
 
-    def write(self, output=sys.stdout):
-        '''
-        Write self.entries as LDIF file.
-        '''
-        writer = ldif_.LDIFWriter(output)
-        for dn, entry in self.entries.items():
-            if '-' in entry.keys():
-                entry.pop('-')
-
-            writer.unparse(dn, entry)
+    return entries
 
 
-    def populate(self, query):
-        '''
-        Populate entries from an LDAP query (like LDAP.search_s()).
-        '''
-        for dn, attrs in query:
-            self.entries[dn] = attrs
+def write_ldif(entries, output=sys.stdout):
+    '''
+    Write self.entries as LDIF file.
+    '''
+    pass

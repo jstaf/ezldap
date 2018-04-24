@@ -12,7 +12,7 @@ import ldap.modlist
 
 import ldap3
 
-from .ldif import LDIF
+from .ldif import read_ldif
 from .password import ssha_passwd
 from .config import config
 
@@ -240,7 +240,7 @@ class LDAP(ldap3.Connection):
         replace.update(config())
         replace.update(kwargs)
 
-        ldif = LDIF(ldif_path, replace)
+        ldif = read_ldif(ldif_path, replace)
         self.ldif_add(ldif)
 
 
@@ -263,7 +263,7 @@ class LDAP(ldap3.Connection):
             except IndexError:
                 raise ValueError('User does not exist')
 
-        ldif = LDIF(ldif_path, replace)
+        ldif = read_ldif(ldif_path, replace)
         self.ldif_modify(ldif)
 
 
@@ -290,7 +290,7 @@ class LDAP(ldap3.Connection):
             except IndexError:
                 raise ValueError('Group does not exist')
 
-        ldif = LDIF(ldif_path, replace)
+        ldif = read_ldif(ldif_path, replace)
         self.ldif_add(ldif)
 
 
