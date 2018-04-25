@@ -28,10 +28,10 @@ def auto_bind(conf=None):
         print('Enter bind DN password...', file=sys.stderr)
         conf['bindpw'] = getpass.getpass()
 
-    return LDAP(conf['host'], user=conf['binddn'], password=conf['bindpw'])
+    return Connection(conf['host'], user=conf['binddn'], password=conf['bindpw'])
 
 
-class LDAP(ldap3.Connection):
+class Connection(ldap3.Connection):
     '''
     An object-oriented wrapper around an LDAP connection.
     Used to make pyldap's LDAPObject even easier to use.
