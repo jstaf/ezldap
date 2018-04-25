@@ -89,6 +89,11 @@ class LDAP(ldap3.Connection):
         query = []
         for res in self.response:
             result = {'dn': [res['dn']]}
+            # ensure every attribute is encapsulated in a list
+            for k, v in res['attributes'].items():
+                if not isinstance(v, list):
+                    res['attributes'][k] = [v]
+
             result.update(res['attributes'])
             query.append(result)
 
