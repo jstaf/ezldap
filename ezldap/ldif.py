@@ -1,11 +1,11 @@
-"""
-Read and write LDIF files to/from a dict
-"""
+'''
+Utility functions for reading/writing to LDIF files.
+'''
 
-import sys
-import io
 import os
 import re
+import copy
+from io import StringIO
 from string import Template
 
 def read_ldif(path, replacements=None):
@@ -18,7 +18,7 @@ def read_ldif(path, replacements=None):
         content = open(path)
     else:
         template = Template(open(path).read())
-        content = io.StringIO(template.substitute(replacements))
+        content = StringIO(template.substitute(replacements))
 
     entries = []
     entry = {}
@@ -47,8 +47,33 @@ def read_ldif(path, replacements=None):
     return entries
 
 
-def write_ldif(entries, output=sys.stdout):
+def write_ldif(entries, path):
     '''
     Write self.entries as LDIF file.
     '''
-    pass
+    # because we're modifying the entries contained as we iterate through.
+    entries_cp = copy.deepcopy(entries)
+    with open(os.path.expanduser(path), 'w') as handle:
+        for entry in entries_cp:
+            handle.writelines(_dump_attributes('dn', entry.pop('dn')))
+            #TODO only works with ldif-add, needs the ability to handle ldif-change
+            handle.writelines(_dump_attributes('objectClass', entry.pop('objectClass')))
+            for k, v in entry.items():
+                handle.writelines(_dump_attributes(k, v))
+
+            handle.write('\n')
+
+
+def _dump_attributes(key, values):
+    '''
+    Convert a dictionary key/value pair (key: [value1, value2]) to a list of the
+    form: ['key: value1', 'key: value2'].
+    '''
+    if not isinstance(values, list):
+        values = [values]
+
+    out = []
+    for v in values:
+        out.append('{}: {}\n'.format(key, v))
+
+    return out
