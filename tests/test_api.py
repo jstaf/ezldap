@@ -7,17 +7,36 @@ import ezldap
 prefix = 'ezldap/templates/'
 
 def test_bind_success(slapd):
+    '''
+    If this fails, the bind has failed.
+    '''
     assert slapd.who_am_i() == 'dn:cn=Manager,dc=ezldap,dc=io'
 
 
 def test_base_dn(slapd):
-    # should fail on anonymous bind
+    '''
+    Do we retrieve the correct base dn?
+    '''
     assert slapd.base_dn() == 'dc=ezldap,dc=io'
 
 
 def test_search_list(slapd):
+    '''
+    Does search_list() return the correct number of entries?
+    '''
     assert len(slapd.search_list('(objectClass=organizationalUnit)')) == 2
     assert len(slapd.search_list('(objectClass=applicationProcess)')) == 0
+
+
+def test_search_list_encapsulation(slapd):
+    '''
+    Dump entire DIT and ensure every attribute of entries returned is
+    encapsulated in a list.
+    '''
+    query = slapd.search_list()
+    for res in query:
+        for v in res.values():
+            assert isinstance(v, list)
 
 
 def test_search_list_t(slapd):
@@ -28,6 +47,10 @@ def test_search_list_t(slapd):
 
 
 def test_search_df(slapd):
+    '''
+    Does the search_df function return a Pandas DataFrame and is it collapsing
+    lists to a "|" delimited string correctly?
+    '''
     # dump entire DIT
     df = slapd.search_df()
     ezldapio = df[df['dn'] == 'dc=ezldap,dc=io']
