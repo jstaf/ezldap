@@ -40,6 +40,9 @@ def test_search_list_encapsulation(slapd):
 
 
 def test_search_list_t(slapd):
+    '''
+    Does search_list_t() return data properly?
+    '''
     query = slapd.search_list_t('(objectClass=organizationalUnit)')
     assert set(query['ou']) == {'Group', 'People'}
     fail = slapd.search_list_t('(objectClass=applicationProcess)')
@@ -48,7 +51,7 @@ def test_search_list_t(slapd):
 
 def test_search_list_t_attribute_nonlist(slapd):
     '''
-    Does search_list_t fail if attributes is not a list.
+    Does search_list_t fail if attributes is not a list?
     '''
     query = slapd.search_list_t('(objectClass=organizationalUnit)', 'ou')
     assert 'ou' in query.keys()
@@ -58,7 +61,7 @@ def test_search_list_t_attribute_nonlist(slapd):
 
 def test_search_list_t_num_unpacking(slapd):
     '''
-    Does search_list_t()'s unpack_lists fail when unpacking lists of numbers.
+    Does search_list_t()'s unpack_lists fail when unpacking lists of numbers?
     '''
     slapd.add_group('unpack_lists_test')
     assert len(slapd.search_list_t('(objectClass=posixGroup)')) > 0
@@ -111,6 +114,9 @@ def test_add_user(slapd, config):
 
 
 def test_add_to_group(slapd, config):
+    '''
+    Test adding a user to a group using ldif templates.
+    '''
     slapd.add_group('group_for_user',
                     ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     slapd.add_user('user1234', 'group_for_user', 'password123456',
