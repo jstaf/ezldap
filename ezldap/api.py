@@ -5,6 +5,7 @@ Bind to an LDAP directory and perform various operations.
 import sys
 import getpass
 import re
+import copy
 
 # python-ldap
 import ldap
@@ -118,6 +119,9 @@ class Connection(ldap3.Connection):
             for res in response:
                 all_attribs.update(res.keys())
         else:
+            if not isinstance(attributes, list):
+                attributes = [attributes]
+
             all_attribs.update(attributes)
 
         query = {attrib: [] for attrib in all_attribs}
@@ -127,7 +131,13 @@ class Connection(ldap3.Connection):
                 try:
                     v = res[k]
                     if unpack_lists and isinstance(v, list):
-                        v = unpack_delimiter.join(v)
+                        if len(v) > 1:
+                            # coerces to string
+                            v = unpack_delimiter.join([str(x) for x in v])
+                        else:
+                            # string coercion avoided for 1-element lists
+                            v = v[0]
+
                 except KeyError:
                     v = None
 
@@ -152,7 +162,6 @@ class Connection(ldap3.Connection):
         query = self.search_list_t(search_filter, attributes=attributes,
             search_base=search_base, **kwargs)
         return DataFrame(query)
-
 
 
     def search_ldif():
@@ -187,22 +196,25 @@ class Connection(ldap3.Connection):
         if basedn is None:
             basedn = self.base_dn()
 
-        return self.search_list(basedn, '({}={})'.format(index, user))
+        return self.search_list('({}={})'.format(index, user), search_base=basedn)
 
 
     def get_group(self, group, basedn=None, index='cn'):
         '''
         Return a given group. Searches entire directory if no base search dn given.
         '''
-        return self.get_user(basedn, '({}={})'.format(index, group))
+        return self.get_user(group, basedn=basedn, index=index)
 
 
     def ldif_add(self, ldif):
         """
         Perform an add operation using an LDIF object.
         """
-        for dn, attrs in ldif.entries.items():
-            self.add_s(dn, ldap.modlist.addModlist(attrs))
+        for entry in ldif:
+            entry_cp = copy.deepcopy(entry)
+            dn = entry_cp.pop('dn')
+            objectclass = entry_cp.pop('objectClass')
+            self.add(dn=dn, object_class=objectclass, attributes=entry_cp)
 
 
     def ldif_modify(self, ldif):

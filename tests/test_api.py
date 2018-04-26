@@ -46,6 +46,24 @@ def test_search_list_t(slapd):
     assert set(fail['dn']) == set()
 
 
+def test_search_list_t_attribute_nonlist(slapd):
+    '''
+    Does search_list_t fail if attributes is not a list.
+    '''
+    query = slapd.search_list_t('(objectClass=organizationalUnit)', 'ou')
+    assert 'ou' in query.keys()
+    query = slapd.search_list_t('(objectClass=organizationalUnit)', ['ou'])
+    assert 'ou' in query.keys()
+
+
+def test_search_list_t_num_unpacking(slapd):
+    '''
+    Does search_list_t()'s unpack_lists fail when unpacking lists of numbers.
+    '''
+    slapd.add_group('unpack_lists_test')
+    assert len(slapd.search_list_t('(objectClass=posixGroup)')) > 0
+
+
 def test_search_df(slapd):
     '''
     Does the search_df function return a Pandas DataFrame and is it collapsing
