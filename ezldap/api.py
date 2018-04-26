@@ -146,7 +146,6 @@ class Connection(ldap3.Connection):
         return query
 
 
-
     def search_df(self, search_filter='(objectClass=*)',
                   attributes=ldap3.ALL_ATTRIBUTES, search_base=None, **kwargs):
         '''
@@ -191,12 +190,13 @@ class Connection(ldap3.Connection):
 
     def get_user(self, user, basedn=None, index='uid'):
         '''
-        Return given user. Searches entire directory if no base search dn given.
+        Return given user as a dict. Searches entire directory if no base search
+        dn given.
         '''
         if basedn is None:
             basedn = self.base_dn()
 
-        return self.search_list('({}={})'.format(index, user), search_base=basedn)
+        return self.search_list('({}={})'.format(index, user), search_base=basedn)[0]
 
 
     def get_group(self, group, basedn=None, index='cn'):
@@ -248,20 +248,24 @@ class Connection(ldap3.Connection):
         self.modify_s(dn, [(ldap.MOD_DELETE, attrib, to_bytes(value))])
 
 
-    def add_group(self, groupname,
+    def add_group(self, groupname, conf=None,
         ldif_path='~/.ezldap/ldap-add-group.ldif', **kwargs):
         """
         Adds a group from an LDIF template.
         """
         replace = {'groupname': groupname, 'gid': self.next_gidn()}
-        replace.update(config())
+
+        if conf is None:
+            conf = config()
+
+        replace.update(conf)
         replace.update(kwargs)
 
         ldif = read_ldif(ldif_path, replace)
         self.ldif_add(ldif)
 
 
-    def add_to_group(self, username, groupname,
+    def add_to_group(self, username, groupname, conf=None,
         ldif_path='~/.ezldap/ldap-add-user-to-group.ldif', **kwargs):
         """
         Adds a user to a group.
@@ -272,7 +276,10 @@ class Connection(ldap3.Connection):
                 'groupname': groupname,
                 'userdn': None}
 
-        replace.update(config())
+        if conf is None:
+            conf = config()
+
+        replace.update(conf)
         replace.update(kwargs)
         if replace['userdn'] is None:
             try:
@@ -284,7 +291,7 @@ class Connection(ldap3.Connection):
         self.ldif_modify(ldif)
 
 
-    def add_user(self, username, groupname, password,
+    def add_user(self, username, groupname, password, conf=None,
         ldif_path='~/.ezldap/ldap-add-user.ldif', **kwargs):
         '''
         Adds a user. Does not create or modify groups.
@@ -296,7 +303,10 @@ class Connection(ldap3.Connection):
             'gid': None,
             'uid': None}
 
-        replace.update(config())
+        if conf is None:
+            conf = config()
+
+        replace.update(conf)
         replace.update(kwargs)
         if replace['uid'] is None:
             replace['uid'] = self.next_uidn()
