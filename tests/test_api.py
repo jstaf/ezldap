@@ -95,15 +95,15 @@ def test_add_user(slapd, config):
     slapd.add_group('adduser', gid=50001, ldif_path=prefix + 'ldap-add-group.ldif', conf=config)
     # by groupname
     slapd.add_user('user1', 'adduser', 'test1234', ldif_path=prefix + 'ldap-add-user.ldif', conf=config)
-    assert len(slapd.get_user('user1')) == 1
+    assert slapd.get_user('user1')['uid'][0] == 'user1'
 
     # by gid
     slapd.add_user('user2', None, 'test1234', gid=50001, ldif_path=prefix + 'ldap-add-user.ldif', conf=config)
     query = slapd.get_user('user2')
-    assert len(query) == 1
+    assert query['dn'][0] == 'uid=user2,ou=People,dc=ezldap,dc=io'
 
     # is the password set correctly?
-    passwd = query[0][1]['userPassword'][0].decode()
+    passwd = query['userPassword'][0].decode()
     assert ezldap.ssha_check(passwd, 'test1234')
 
 

@@ -313,7 +313,7 @@ class Connection(ldap3.Connection):
 
         if replace['gid'] is None:
             try:
-                replace['gid'] = int(get_attrib_list(self.get_group(groupname, self.base_dn()), 'gidNumber')[0])
+                replace['gid'] = self.get_group(groupname)['gidNumber'][0]
             except IndexError:
                 raise ValueError('Group does not exist')
 
