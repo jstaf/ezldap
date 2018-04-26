@@ -7,10 +7,6 @@ import getpass
 import re
 import copy
 
-# python-ldap
-import ldap
-import ldap.modlist
-
 import ldap3
 
 from .ldif import read_ldif
@@ -221,23 +217,23 @@ class Connection(ldap3.Connection):
         """
         Perform an LDIF modify operation from an LDIF object.
         """
-        for dn, attrs in ldif.entries.items():
-            modlist = _create_modify_modlist(attrs)
-            self.modify_s(dn, modlist)
+        for entry in ldif:
+            modlist = _create_modify_modlist(entry)
+            self.modify(dn, modlist)
 
 
     def modify_replace(self, dn, attrib, value):
         '''
         Change a single attribute on an object.
         '''
-        self.modify_s(dn, [(ldap.MOD_REPLACE, attrib, to_bytes(value))])
+        self.modify(dn, {attrib: [(ldap3.MODIFY_REPLACE, [value] )] })
 
 
     def modify_add(self, dn, attrib, value):
         '''
         Add a single attribute to an object.
         '''
-        self.modify_s(dn, [(ldap.MOD_ADD, attrib, to_bytes(value))])
+        self.modify(dn, {attrib: [(ldap3.MODIFY_ADD, [value] )] })
 
 
     def modify_delete(self, dn, attrib, value=None):
@@ -245,7 +241,7 @@ class Connection(ldap3.Connection):
         Delete a single attribute from an object.
         If value is None, deletes all attributes of that name.
         '''
-        self.modify_s(dn, [(ldap.MOD_DELETE, attrib, to_bytes(value))])
+        self.modify(dn, {attrib: [(ldap3.MODIFY_DELETE, [value] )] })
 
 
     def add_group(self, groupname, conf=None,

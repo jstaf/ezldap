@@ -10,12 +10,8 @@ python:
   - '3.5'
   - '3.6'
 
-before_install:
-  - sudo apt update
-  - sudo apt install ldap-utils libldap-2.4-2 libldap2-dev libsasl2-dev
-
 install:
   - pip install .
-  - pip install pytest-docker docker-compose
+  - pip install pytest-docker docker-compose pandas
 
 script: pytest

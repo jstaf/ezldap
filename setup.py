@@ -19,7 +19,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'PyYAML',
-        'python-ldap',
         'ldap3'
     ],
     setup_requires=['pytest-runner'],
