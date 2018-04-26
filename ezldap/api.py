@@ -271,21 +271,13 @@ class Connection(ldap3.Connection):
         Adds a user to a group.
         The user and group in question must already exist.
         """
-        replace = {
-                'username': username,
-                'groupname': groupname,
-                'userdn': None}
+        replace = {'username': username, 'groupname': groupname}
 
         if conf is None:
             conf = config()
 
         replace.update(conf)
         replace.update(kwargs)
-        if replace['userdn'] is None:
-            try:
-                replace['userdn'] = self.get_user(username, self.base_dn())[0][0]
-            except IndexError:
-                raise ValueError('User does not exist')
 
         ldif = read_ldif(ldif_path, replace)
         self.ldif_modify(ldif)
@@ -297,20 +289,16 @@ class Connection(ldap3.Connection):
         Adds a user. Does not create or modify groups.
         "groupname" may be None if "gid" is specified.
         '''
-        replace = {
-            'username': username,
-            'user_password': ssha_passwd(password),
-            'gid': None,
-            'uid': None}
+        replace = {'username': username,
+                   'user_password': ssha_passwd(password),
+                   'uid': self.next_uidn(),
+                   'gid': None}
 
         if conf is None:
             conf = config()
 
         replace.update(conf)
         replace.update(kwargs)
-        if replace['uid'] is None:
-            replace['uid'] = self.next_uidn()
-
         if replace['gid'] is None:
             try:
                 replace['gid'] = self.get_group(groupname)['gidNumber'][0]
@@ -319,44 +307,3 @@ class Connection(ldap3.Connection):
 
         ldif = read_ldif(ldif_path, replace)
         self.ldif_add(ldif)
-
-
-def to_bytes(value):
-    if value is None:
-        return None
-    elif not isinstance(value, bytes):
-        return str(value).encode()
-    else:
-        return value
-
-
-def _create_modify_modlist(attrs):
-    '''
-    We need to carefully massage our LDIF object to a
-    pyldap modlist because the pyldap API is super awkward.
-    Ref: https://www.python-ldap.org/en/latest/reference/ldap.html#ldap.LDAPObject.modify_ext_s
-    '''
-    changes = OrderedDict()
-    changes['delete'] = ldap.MOD_DELETE
-    changes['replace'] = ldap.MOD_REPLACE
-    changes['add'] = ldap.MOD_ADD
-
-    modlist = []
-    for change_type in changes.keys():
-        # skip change types that don't occur
-        if change_type not in attrs.keys():
-            continue
-
-        # else iterate over those values of change type
-        for attrib_name in attrs[change_type]:
-            attrib_name = attrib_name.decode()
-            try:
-                modlist.append((changes[change_type], attrib_name, attrs[attrib_name]))
-            except KeyError as e:
-                if change_type == 'delete':
-                    # mod_vals is allowed to be None when performing a delete
-                    modlist.append((changes[change_type], attrib_name, None))
-                else:
-                    raise KeyError('No value found to modify. Check your LDIF syntax.') from e
-
-    return modlist

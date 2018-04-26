@@ -82,9 +82,9 @@ def test_add_group(slapd, config):
     '''
     Test adding a group.
     '''
-    slapd.add_group('testgroup', ldif_path=prefix + 'ldap-add-group.ldif', conf=config)
+    slapd.add_group('testgroup', ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     assert slapd.get_group('testgroup')['dn'][0] == 'cn=testgroup,ou=Group,dc=ezldap,dc=io'
-    slapd.add_group('testgroup2', gid=50000, ldif_path=prefix + 'ldap-add-group.ldif', conf=config)
+    slapd.add_group('testgroup2', gid=50000, ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     assert slapd.get_group('testgroup2')['gidNumber'][0] == 50000
 
 
@@ -92,13 +92,16 @@ def test_add_user(slapd, config):
     '''
     Test adding a user to an existing group.
     '''
-    slapd.add_group('adduser', gid=50001, ldif_path=prefix + 'ldap-add-group.ldif', conf=config)
+    slapd.add_group('adduser', gid=50001,
+                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     # by groupname
-    slapd.add_user('user1', 'adduser', 'test1234', ldif_path=prefix + 'ldap-add-user.ldif', conf=config)
+    slapd.add_user('user1', 'adduser', 'test1234',
+                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
     assert slapd.get_user('user1')['uid'][0] == 'user1'
 
     # by gid
-    slapd.add_user('user2', None, 'test1234', gid=50001, ldif_path=prefix + 'ldap-add-user.ldif', conf=config)
+    slapd.add_user('user2', None, 'test1234', gid=50001,
+                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
     query = slapd.get_user('user2')
     assert query['dn'][0] == 'uid=user2,ou=People,dc=ezldap,dc=io'
 
@@ -107,8 +110,11 @@ def test_add_user(slapd, config):
     assert ezldap.ssha_check(passwd, 'test1234')
 
 
-#def test_add_to_group(slapd):
-#    slapd.add_group('group1')
-#    slapd.add_group('user3')
-#    slapd.add_to_group('user3', 'group1')
-#    query = slapd.get_group('')
+def test_add_to_group(slapd, config):
+    slapd.add_group('group_for_user',
+                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    slapd.add_user('user1234', 'group_for_user', 'password123456',
+                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
+    slapd.add_to_group('user1234', 'group_for_user',
+                       ldif_path=prefix+'ldap-add-user-to-group.ldif', conf=config)
+    assert 'user1234' in slapd.get_group('group1')['memberUid']
