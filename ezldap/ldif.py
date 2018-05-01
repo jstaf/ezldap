@@ -52,16 +52,30 @@ def write_ldif(entries, path):
     Write self.entries as LDIF file.
     '''
     # because we're modifying the entries contained as we iterate through.
-    entries_cp = copy.deepcopy(entries)
     with open(os.path.expanduser(path), 'w') as handle:
-        for entry in entries_cp:
-            handle.writelines(_dump_attributes('dn', entry.pop('dn')))
-            #TODO only works with ldif-add, needs the ability to handle ldif-change
-            handle.writelines(_dump_attributes('objectClass', entry.pop('objectClass')))
-            for k, v in entry.items():
-                handle.writelines(_dump_attributes(k, v))
+        _entries_to_handle(entries, handle)
 
-            handle.write('\n')
+
+def print_ldif(entries):
+    '''
+    Print an LDIF entry to stdout.
+    '''
+    with StringIO() as strbuf:
+        _entries_to_handle(entries, strbuf)
+        strbuf.seek(0)
+        print(''.join(strbuf.readlines()))
+
+
+def _entries_to_handle(entries, handle):
+    entries_cp = copy.deepcopy(entries)
+    for entry in entries_cp:
+        handle.writelines(_dump_attributes('dn', entry.pop('dn')))
+        #TODO only works with ldif-add, needs the ability to handle ldif-change
+        handle.writelines(_dump_attributes('objectClass', entry.pop('objectClass')))
+        for k, v in entry.items():
+            handle.writelines(_dump_attributes(k, v))
+
+        handle.write('\n')
 
 
 def _dump_attributes(key, values):
