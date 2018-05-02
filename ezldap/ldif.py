@@ -8,6 +8,8 @@ import copy
 from io import StringIO
 from string import Template
 
+import ldap3
+
 def ldif_read(path, replacements=None):
     '''
     Read an LDIF file into a list of dicts appropriate for use with ezldap.
@@ -20,8 +22,17 @@ def ldif_read(path, replacements=None):
         template = Template(open(path).read())
         content = StringIO(template.substitute(replacements))
 
+    operations = {
+        'add': ldap3.MODIFY_ADD,
+        'replace': ldap3.MODIFY_REPLACE,
+        'delete': ldap3.MODIFY_DELETE
+    }
+
     entries = []
     entry = {}
+    changetype = 'add'
+    next_change_attr = None
+    next_change_type = 'add'
     for line in content:
         if line[0] in {'-', '#'}:
             continue
@@ -29,16 +40,39 @@ def ldif_read(path, replacements=None):
             # new dn- add last entry, and start a new one
             if 'dn' in entry.keys():
                 entries.append(entry)
+                changetype = 'add'
 
             entry = {}
 
         match = re.match(r'(\w+):\s*(.+)', line)
         if match:
             key = match[1]
-            if key not in entry.keys():
+            value = match[2].strip()
+
+            if key == 'changetype':
+                # determine changetype and skip line
+                changetype = value
+                continue
+            elif key not in entry.keys() and key not in operations.keys():
                 entry[key] = []
 
-            entry[key].append(match[2].strip())
+            if changetype == 'modify':
+                # handle ldif-change LDIFs
+                if key in operations.keys():
+                    next_change_type, next_change_attr = key, value
+                    if value not in entry.keys():
+                        # a check in case the attribute has not already been added
+                        entry[value] = []
+
+                    continue
+                elif key == next_change_attr:
+                    # each change is handled separately,
+                    # not the most efficient, but is an easier implementation
+                    value = (operations[next_change_type], value)
+                else:
+                    raise ValueError('Attribute does not match attribute to {}.'.format(next_change))
+
+            entry[key].append(value)
 
     # last ldif object won't be added otherwise
     if 'dn' in entry.keys():
@@ -63,10 +97,6 @@ def ldif_print(entries):
         _entries_to_handle(entries, strbuf)
         strbuf.seek(0)
         print(''.join(strbuf.readlines()))
-
-
-def ldif_modlist(entries):
-    pass
 
 
 def _entries_to_handle(entries, handle):

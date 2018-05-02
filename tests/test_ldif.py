@@ -5,6 +5,7 @@ Ensure that the LDIF templating is working correctly.
 import pytest
 from io import StringIO
 
+import ldap3
 from ezldap import ldif_read
 
 template = 'ezldap/templates/ldap-add-group.ldif'
@@ -34,6 +35,14 @@ def test_template_content():
     assert ldif[0]['dn'][0] == 'cn=test,dc=Group,dc=example,dc=com'
     assert ldif[0]['cn'][0] == 'test'
     assert ldif[0]['gidNumber'][0] == '10001'
+
+
+def test_read_ldif_change():
+    ldif = ldif_read('tests/test_ldif_change.ldif')
+    assert ldif[0]['cn'][0][0] == ldap3.MODIFY_REPLACE
+    assert ldif[0]['cn'][0][1] == 'New name'
+    assert len(ldif[0]['mail']) == 2
+    assert 'sn' in ldif[0].keys()
 
 
 @pytest.mark.skip

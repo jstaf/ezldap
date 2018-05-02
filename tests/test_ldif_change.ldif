@@ -1,0 +1,10 @@
+dn: uid=ldif_mod_test,ou=People,dc=ezldap,dc=io
+changetype: modify
+add: mail
+mail: test1@ezldap.io
+mail: test2@ezldap.io
+delete: sn
+replace: cn
+cn: New name
+delete: gecos
+gecos: ldif_mod_test

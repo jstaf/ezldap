@@ -123,4 +123,4 @@ def test_add_to_group(slapd, config):
                    ldif_path=prefix+'ldap-add-user.ldif', conf=config)
     slapd.add_to_group('user1234', 'group_for_user',
                        ldif_path=prefix+'ldap-add-user-to-group.ldif', conf=config)
-    assert 'user1234' in slapd.get_group('group1')['memberUid']
+    assert 'user1234' in slapd.get_group('group_for_user')['memberUid']

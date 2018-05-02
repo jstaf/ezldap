@@ -13,7 +13,6 @@ from .ldif import ldif_read
 from .password import ssha_passwd
 from .config import config
 
-
 def auto_bind(conf=None):
     '''
     Automatically detects LDAP config values and returns a directory binding.
@@ -218,8 +217,8 @@ class Connection(ldap3.Connection):
         Perform an LDIF modify operation from an LDIF object.
         """
         for entry in ldif:
-            modlist = _create_modify_modlist(entry)
-            self.modify(dn, modlist)
+            dn = entry.pop('dn')
+            self.modify(dn, entry)
 
 
     def modify_replace(self, dn, attrib, value):
