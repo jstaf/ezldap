@@ -162,14 +162,14 @@ def add_user(argv):
 
 def change_home(argv):
     with ezldap.auto_bind() as con:
-        dn = con.get_user(argv.username[0])[0][0]
-        con.modify_replace(dn, 'homeDirectory', argv.homedir[0].encode())
+        dn = con.get_user(argv.username[0])['dn'][0]
+        con.modify_replace(dn, 'homeDirectory', argv.homedir[0])
 
 
 def change_shell(argv):
     with ezldap.auto_bind() as con:
-        dn = con.get_user(argv.username[0])[0][0]
-        con.modify_replace(dn, 'loginShell', argv.shell[0].encode())
+        dn = con.get_user(argv.username[0])['dn'][0]
+        con.modify_replace(dn, 'loginShell', argv.shell[0])
 
 
 def change_pw(argv):
@@ -181,11 +181,11 @@ def change_pw(argv):
         passwd = ezldap.random_passwd()
         print('New password for {} - {}'.format(user, passwd))
 
-    ssha = ezldap.ssha_passwd(passwd).encode()
+    ssha = ezldap.ssha_passwd(passwd)
 
     with ezldap.auto_bind() as con:
         try:
-            dn = con.get_user(user)[0][0]
+            dn = con.get_user(user)['dn'][0]
         except IndexError:
             sys.exit('User does not exist.')
 
@@ -210,7 +210,7 @@ def check_pw(argv):
     if ezldap.ssha_check(ssha, passwd):
         print('\nPasswords match!')
     else:
-        print('\nPasswords do not match. :\'(')
+        print("\nPasswords do not match. :'(")
 
 
 def config(argv):
@@ -260,18 +260,12 @@ def interactive_conf(prompt, default=None):
 
 def search(argv):
     with ezldap.auto_bind() as con:
-        query = con.search_safe(filter=argv.filter[0])
-        ldif = ezldap.LDIF()
-        ldif.populate(results)
-        ldif.write()
+        ezldap.ldif_print(con.search_list(filter=argv.filter[0]))
 
 
 def search_dn(argv):
     with ezldap.auto_bind() as con:
-        query = con.search_safe(filter='(dn=*{}*)'.format(argv.keyword))
-        ldif = ezldap.LDIF()
-        ldif.populate(results)
-        ldif.write()
+        ezldap.ldif_print(con.search_safe(filter='(dn=*{}*)'.format(argv.keyword)))
 
 
 if __name__ == '__main__':
