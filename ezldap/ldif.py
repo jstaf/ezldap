@@ -8,7 +8,7 @@ import copy
 from io import StringIO
 from string import Template
 
-def read_ldif(path, replacements=None):
+def ldif_read(path, replacements=None):
     '''
     Read an LDIF file into a list of dicts appropriate for use with ezldap.
     '''
@@ -47,16 +47,15 @@ def read_ldif(path, replacements=None):
     return entries
 
 
-def write_ldif(entries, path):
+def ldif_write(entries, path):
     '''
     Write self.entries as LDIF file.
     '''
-    # because we're modifying the entries contained as we iterate through.
     with open(os.path.expanduser(path), 'w') as handle:
         _entries_to_handle(entries, handle)
 
 
-def print_ldif(entries):
+def ldif_print(entries):
     '''
     Print an LDIF entry to stdout.
     '''
@@ -66,7 +65,12 @@ def print_ldif(entries):
         print(''.join(strbuf.readlines()))
 
 
+def ldif_modlist(entries):
+    pass
+
+
 def _entries_to_handle(entries, handle):
+    # because we're modifying the entries contained as we iterate through.
     entries_cp = copy.deepcopy(entries)
     for entry in entries_cp:
         handle.writelines(_dump_attributes('dn', entry.pop('dn')))

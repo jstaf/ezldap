@@ -9,7 +9,7 @@ import copy
 
 import ldap3
 
-from .ldif import read_ldif
+from .ldif import ldif_read
 from .password import ssha_passwd
 from .config import config
 
@@ -257,7 +257,7 @@ class Connection(ldap3.Connection):
         replace.update(conf)
         replace.update(kwargs)
 
-        ldif = read_ldif(ldif_path, replace)
+        ldif = ldif_read(ldif_path, replace)
         self.ldif_add(ldif)
 
 
@@ -275,7 +275,7 @@ class Connection(ldap3.Connection):
         replace.update(conf)
         replace.update(kwargs)
 
-        ldif = read_ldif(ldif_path, replace)
+        ldif = ldif_read(ldif_path, replace)
         self.ldif_modify(ldif)
 
 
@@ -301,5 +301,5 @@ class Connection(ldap3.Connection):
             except IndexError:
                 raise ValueError('Group does not exist')
 
-        ldif = read_ldif(ldif_path, replace)
+        ldif = ldif_read(ldif_path, replace)
         self.ldif_add(ldif)

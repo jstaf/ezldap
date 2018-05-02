@@ -5,7 +5,7 @@ Ensure that the LDIF templating is working correctly.
 import pytest
 from io import StringIO
 
-from ezldap import read_ldif
+from ezldap import ldif_read
 
 template = 'ezldap/templates/ldap-add-group.ldif'
 
@@ -14,20 +14,20 @@ def test_incomplete_templating():
     Does the LDIF properly fail on all the right fields
     '''
     with pytest.raises(KeyError) as err:
-        read_ldif(template, replacements={})
+        ldif_read(template, replacements={})
         assert 'groupname' in str(err.value)
 
-        read_ldif(template, replacements={'groupname': 'test'})
+        ldif_read(template, replacements={'groupname': 'test'})
         assert 'groupdn' in str(err.value)
 
-        read_ldif(template, replacements={
+        ldif_read(template, replacements={
             'groupname': 'test',
             'groupdn': 'ou=Group,dc=example,dc=com'})
         assert 'gid' in str(err.value)
 
 
 def test_template_content():
-    ldif = read_ldif(template, replacements={
+    ldif = ldif_read(template, replacements={
         'groupname': 'test',
         'groupdn': 'dc=Group,dc=example,dc=com',
         'gid': 10001})
@@ -38,4 +38,4 @@ def test_template_content():
 
 @pytest.mark.skip
 def test_dash_in_file():
-    read_ldif('tests/setup.ldif').write(StringIO())
+    ldif_read('tests/setup.ldif')
