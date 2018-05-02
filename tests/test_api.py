@@ -59,11 +59,11 @@ def test_search_list_t_attribute_nonlist(slapd):
     assert 'ou' in query.keys()
 
 
-def test_search_list_t_num_unpacking(slapd):
+def test_search_list_t_num_unpacking(slapd, config):
     '''
     Does search_list_t()'s unpack_lists fail when unpacking lists of numbers?
     '''
-    slapd.add_group('unpack_lists_test')
+    slapd.add_group('unpack_lists_test', conf=config)
     assert len(slapd.search_list_t('(objectClass=posixGroup)')) > 0
 
 
