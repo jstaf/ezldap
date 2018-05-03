@@ -125,3 +125,41 @@ def test_add_to_group(slapd, config):
     slapd.add_to_group('user1234', 'group_for_user',
                        ldif_path=prefix+'ldap-add-user-to-group.ldif', conf=config)
     assert 'user1234' in slapd.get_group('group_for_user')['memberUid']
+
+
+def test_modify_add(slapd, config):
+    slapd.add_group('modify_add',
+                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    slapd.modify_add('cn=modify_add,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
+    group = slapd.get_group('modify_add')
+    assert len(group['cn']) == 2
+    assert 'added' in group['cn']
+
+
+def test_modify_replace(slapd, config):
+    slapd.add_group('modify_replace',
+                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    slapd.modify_add('cn=modify_replace,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
+    slapd.modify_replace('cn=modify_replace,ou=Group,dc=ezldap,dc=io', 'memberUid', 'work_please')
+    group = slapd.get_group('modify_replace')
+    assert len(group['memberUid']) == 1
+    assert group['memberUid'][0] == 'work_please'
+
+
+def test_modify_delete(slapd, config):
+    slapd.add_group('modify_delete',
+                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    # test delete from multiple attributes
+    slapd.modify_add('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
+    slapd.modify_delete('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
+    group = slapd.get_group('modify_delete')
+    assert len(group['cn']) == 1
+    assert 'added' not in group['cn']
+
+    # test delete from single, non-structural attributes
+    slapd.modify_add('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
+    group = slapd.get_group('modify_delete')
+    assert 'memberUid' in group.keys()
+    slapd.modify_delete('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
+    group = slapd.get_group('modify_delete')
+    assert 'memberUid' not in group.keys()
