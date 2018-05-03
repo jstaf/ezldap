@@ -17,7 +17,7 @@ def random_passwd(length=10):
     Generate a readable, random password with no ambiguous characters.
     """
     chars = string.ascii_letters + string.digits
-    chars = re.sub('[1lO0]', '', chars)
+    chars = re.sub('[1lIO0]', '', chars)
     r = SystemRandom()
     return ''.join(r.choice(chars) for char in range(length))
 
@@ -49,8 +49,7 @@ def ssha_check(ssha_val, str_val):
     # SHA1 hashes are 20 characters
     salt = ssha_val[20:]
     digest = ssha_val[:20]
-    
+
     # create a hash from str_val using original salt and see if it matches
     str_val_ssha = ssha(str_val, salt)
     return digest == str_val_ssha.digest()
-
