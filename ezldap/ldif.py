@@ -44,10 +44,10 @@ def ldif_read(path, replacements=None):
 
             entry = {}
 
-        match = re.match(r'(\w+):\s*(.+)', line)
-        if match:
-            key = match[1]
-            value = match[2].strip()
+        match = re.findall(r'(\w+):\s*(.+)', line)
+        if len(match) > 0:
+            key = match[0][0]
+            value = match[0][1].strip()
 
             if key == 'changetype':
                 # determine changetype and skip line
