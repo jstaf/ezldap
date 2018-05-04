@@ -45,6 +45,8 @@ def test_read_ldif_change():
     assert 'sn' in ldif[0].keys()
 
 
-@pytest.mark.skip
 def test_dash_in_file():
-    ldif_read('tests/setup.ldif')
+    ldif = ldif_read('tests/test_ldif_chars.ldif')
+    for key in ldif[0].keys():
+        assert '-' not in key
+        assert '#' not in key

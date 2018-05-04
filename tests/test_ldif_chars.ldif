@@ -1,0 +1,21 @@
+dn: uid=someuser,ou=Group,dc=ezldap,dc=io
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+uid: someuser
+uidNumber: 12345
+gidNumber: 12345
+cn: someuser
+sn: someuser
+mail: someuser@ezldap.io
+shadowMax: 180
+shadowLastChange: 0
+shadowWarning: 7
+--
+# dont add this comment
+dn: cn=somegroup,ou=Group,dc=ezldap,dc=io
+objectClass: top
+objectClass: posixGroup
+cn: somegroup
+gidNumber: 12345
+memberUid: someuser
