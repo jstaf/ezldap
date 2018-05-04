@@ -128,6 +128,9 @@ def test_add_to_group(slapd, config):
 
 
 def test_modify_add(slapd, config):
+    '''
+    Does modify_add() add entries properly?
+    '''
     slapd.add_group('modify_add',
                     ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     slapd.modify_add('cn=modify_add,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
@@ -137,6 +140,9 @@ def test_modify_add(slapd, config):
 
 
 def test_modify_replace(slapd, config):
+    '''
+    Does modify_replace() replace entries properly?
+    '''
     slapd.add_group('modify_replace',
                     ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     slapd.modify_add('cn=modify_replace,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
@@ -147,6 +153,9 @@ def test_modify_replace(slapd, config):
 
 
 def test_modify_delete(slapd, config):
+    '''
+    Does modify_delete() delete entries properly?
+    '''
     slapd.add_group('modify_delete',
                     ldif_path=prefix+'ldap-add-group.ldif', conf=config)
     # test delete from multiple attributes
@@ -163,3 +172,32 @@ def test_modify_delete(slapd, config):
     slapd.modify_delete('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
     group = slapd.get_group('modify_delete')
     assert 'memberUid' not in group.keys()
+
+
+def test_ldif_add(slapd):
+    '''
+    Does Connection.ldif_add() add entries properly?
+    '''
+    ldif = ezldap.ldif_read('tests/test_ldif_chars.ldif')
+    slapd.ldif_add(ldif)
+    user = slapd.get_user('someuser')
+    assert user['cn'][0] == 'someuser'
+    group = slapd.get_group('somegroup')
+    assert group['cn'][0] == 'somegroup'
+
+
+def test_ldif_modify(slapd):
+    '''
+    Add an object then modify it with a giant ldif-change LDIF to test the
+    ldif_modify method.
+    '''
+    ldif = ezldap.ldif_read('tests/test_ldif_change_orig.ldif')
+    slapd.ldif_add(ldif)
+    ldif_change = ezldap.ldif_read('tests/test_ldif_change.ldif')
+    slapd.ldif_modify(ldif)
+    user = slapd.get_user('ldif_mod_test')
+    assert 'test1.ezldap.io' in user['mail']
+    assert 'test2.ezldap.io' in user['mail']
+    assert 'sn' not in user.keys()
+    assert 'gecos' not in user.keys()
+    assert user['cn'][0] == 'New name'

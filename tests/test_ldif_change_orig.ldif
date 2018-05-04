@@ -1,0 +1,22 @@
+dn: uid=ldif_mod_test,ou=People,dc=ezldap,dc=io
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+cn: jonathan teddifer
+sn: teddifer
+userPassword: {SSHA}RQr+ybaX7Mo6tpUDz6rIpCkvkR+93Nf3
+loginShell: /bin/bash
+uidNumber: 98765
+gidNumber: 98765
+gecos: deleteme
+shadowMax: 180
+shadowWarning: 7
+shadowLastChange: 0
+homeDirectory: /home/ldif_mod_test
+--
+dn: cn=ldif_mod_change_group,ou=Group,dc=ezldap,dc=io
+objectClass: top
+objectClass: posixGroup
+cn: ldif_mod_change_group
+gidNumber: 98765
