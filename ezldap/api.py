@@ -191,7 +191,10 @@ class Connection(ldap3.Connection):
         if basedn is None:
             basedn = self.base_dn()
 
-        return self.search_list('({}={})'.format(index, user), search_base=basedn)[0]
+        try:
+            return self.search_list('({}={})'.format(index, user), search_base=basedn)[0]
+        except IndexError:
+            raise KeyError('Object "{}" was not found'.format(user))
 
 
     def get_group(self, group, basedn=None, index='cn'):
