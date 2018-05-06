@@ -179,7 +179,7 @@ def test_ldif_add(slapd):
     '''
     Does Connection.ldif_add() add entries properly?
     '''
-    ldif = ezldap.ldif_read('tests/test_ldif_chars.ldif')
+    ldif = ezldap.ldif_read('tests/test_ldif_add.ldif')
     results = slapd.ldif_add(ldif)
     assert results[0]['result'] == 0
     assert results[1]['result'] == 0
@@ -209,10 +209,14 @@ def test_ldif_modify(slapd):
     ldif = ezldap.ldif_read('tests/test_ldif_change_orig.ldif')
     slapd.ldif_add(ldif)
     ldif_change = ezldap.ldif_read('tests/test_ldif_change.ldif')
-    slapd.ldif_modify(ldif)
+    result = slapd.ldif_modify(ldif_change)
+    assert result[0]['result'] == 0
+    print(result)
     user = slapd.get_user('ldif_mod_test')
-    assert 'test1.ezldap.io' in user['mail']
-    assert 'test2.ezldap.io' in user['mail']
+    #print(user)
+    #TODO nosuchattribute when mail is not originally supplied
+    assert 'test1@ezldap.io' in user['mail']
+    assert 'test2@ezldap.io' in user['mail']
     assert 'sn' not in user.keys()
     assert 'gecos' not in user.keys()
     assert user['cn'][0] == 'New name'

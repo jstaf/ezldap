@@ -46,7 +46,6 @@ def test_read_ldif_change():
 
 
 def test_dash_in_file():
-    ldif = ldif_read('tests/test_ldif_chars.ldif')
+    ldif = ldif_read('tests/test_ldif_change.ldif')
     for key in ldif[0].keys():
-        assert '-' not in key
-        assert '#' not in key
+        assert key.strip()[0] not in {'#', '-'}

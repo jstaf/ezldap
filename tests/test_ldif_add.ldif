@@ -12,7 +12,7 @@ shadowMax: 180
 shadowLastChange: 0
 shadowWarning: 7
 homeDirectory: /home/someuser
---
+-
 # dont add this comment
 dn: cn=somegroup,ou=Group,dc=ezldap,dc=io
 objectClass: top

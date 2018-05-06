@@ -226,8 +226,9 @@ class Connection(ldap3.Connection):
         """
         results = []
         for entry in ldif:
-            dn = entry.pop('dn')
-            self.modify(dn, entry)
+            entry_cp = copy.deepcopy(entry)
+            dn = entry_cp.pop('dn')[0]
+            self.modify(dn, entry_cp)
             results.append(self.result)
 
         return results
