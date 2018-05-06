@@ -208,20 +208,29 @@ class Connection(ldap3.Connection):
         """
         Perform an add operation using an LDIF object.
         """
+        results = []
         for entry in ldif:
             entry_cp = copy.deepcopy(entry)
-            dn = entry_cp.pop('dn')
+            dn = entry_cp.pop('dn')[0]
+            #TODO fix for 389 directory server and "objectClasses"
             objectclass = entry_cp.pop('objectClass')
             self.add(dn=dn, object_class=objectclass, attributes=entry_cp)
+            results.append(self.result)
+
+        return results
 
 
     def ldif_modify(self, ldif):
         """
         Perform an LDIF modify operation from an LDIF object.
         """
+        results = []
         for entry in ldif:
             dn = entry.pop('dn')
             self.modify(dn, entry)
+            results.append(self.result)
+
+        return results
 
 
     def modify_replace(self, dn, attrib, value):
@@ -229,6 +238,7 @@ class Connection(ldap3.Connection):
         Change a single attribute on an object.
         '''
         self.modify(dn, {attrib: [(ldap3.MODIFY_REPLACE, [value] )] })
+        return self.result
 
 
     def modify_add(self, dn, attrib, value):
@@ -236,6 +246,7 @@ class Connection(ldap3.Connection):
         Add a single attribute to an object.
         '''
         self.modify(dn, {attrib: [(ldap3.MODIFY_ADD, [value] )] })
+        return self.result
 
 
     def modify_delete(self, dn, attrib, value=None):
@@ -244,6 +255,7 @@ class Connection(ldap3.Connection):
         If value is None, deletes all attributes of that name.
         '''
         self.modify(dn, {attrib: [(ldap3.MODIFY_DELETE, [value] )] })
+        return self.result
 
 
     def add_group(self, groupname, conf=None,
@@ -260,7 +272,7 @@ class Connection(ldap3.Connection):
         replace.update(kwargs)
 
         ldif = ldif_read(ldif_path, replace)
-        self.ldif_add(ldif)
+        return self.ldif_add(ldif)
 
 
     def add_to_group(self, username, groupname, conf=None,
@@ -278,7 +290,7 @@ class Connection(ldap3.Connection):
         replace.update(kwargs)
 
         ldif = ldif_read(ldif_path, replace)
-        self.ldif_modify(ldif)
+        return self.ldif_modify(ldif)
 
 
     def add_user(self, username, groupname, password, conf=None,
@@ -304,4 +316,4 @@ class Connection(ldap3.Connection):
                 raise ValueError('Group does not exist')
 
         ldif = ldif_read(ldif_path, replace)
-        self.ldif_add(ldif)
+        return self.ldif_add(ldif)

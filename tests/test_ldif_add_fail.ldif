@@ -1,0 +1,22 @@
+dn: uid=someuser2,ou=Group,dc=ezldap,dc=io
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+uid: someuser2
+uidNumber: 12346
+gidNumber: 12346
+cn: someuser2
+sn: someuser2
+mail: someuser2@ezldap.io
+shadowMax: 180
+shadowLastChange: 0
+shadowWarning: 7
+# homeDirectory is missing and should fail
+--
+# dont add this comment
+dn: cn=somegroup2,ou=Group,dc=ezldap,dc=io
+objectClass: top
+objectClass: posixGroup
+cn: somegroup2
+gidNumber: 12346
+memberUid: someuser2

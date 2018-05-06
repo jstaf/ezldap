@@ -2,6 +2,7 @@
 Test ldap operations on a test instance of slapd.
 '''
 
+import pytest
 import ezldap
 
 prefix = 'ezldap/templates/'
@@ -179,11 +180,25 @@ def test_ldif_add(slapd):
     Does Connection.ldif_add() add entries properly?
     '''
     ldif = ezldap.ldif_read('tests/test_ldif_chars.ldif')
-    slapd.ldif_add(ldif)
+    results = slapd.ldif_add(ldif)
+    assert results[0]['result'] == 0
+    assert results[1]['result'] == 0
     user = slapd.get_user('someuser')
     assert user['cn'][0] == 'someuser'
     group = slapd.get_group('somegroup')
     assert group['cn'][0] == 'somegroup'
+
+
+def test_ldif_add_fail(slapd):
+    '''
+    Does Connection.ldif_add() add entries properly?
+    '''
+    ldif = ezldap.ldif_read('tests/test_ldif_add_fail.ldif')
+    results = slapd.ldif_add(ldif)
+    assert results[0]['result'] != 0
+    with pytest.raises(KeyError) as e:
+        user = slapd.get_user('someuser2')
+        assert 'was not found' in e.value
 
 
 def test_ldif_modify(slapd):
