@@ -34,7 +34,15 @@ def ldif_read(path, replacements=None):
     next_change_attr = None
     next_change_type = 'add'
     for line in content:
-        if line[0] in {'-', '#'}:
+        if line[0] == '#':
+            continue
+        if line[0] == '-':
+            if next_change_type == 'delete' and len(entry[next_change_attr]) == 0:
+                # The last entry ended with no entries and was also a "delete"
+                # change. This should result in a delete change that deletes all
+                # entries for that attribute.
+                entry[next_change_attr].append((ldap3.MODIFY_DELETE, []))
+
             continue
         elif re.match(r'dn:', line):
             # new dn- add last entry, and start a new one
@@ -68,7 +76,7 @@ def ldif_read(path, replacements=None):
                 elif key == next_change_attr:
                     # each change is handled separately,
                     # not the most efficient, but is an easier implementation
-                    value = (operations[next_change_type], value)
+                    value = (operations[next_change_type], [value])
                 else:
                     raise ValueError('Attribute does not match attribute to {}.'.format(next_change))
 

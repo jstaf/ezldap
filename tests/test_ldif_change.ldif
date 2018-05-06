@@ -7,7 +7,7 @@ mail: test2@ezldap.io
 replace: cn
 cn: New name
 -
-delete: sn
+delete: shadowLastChange
 -
 delete: gecos
 gecos: deleteme

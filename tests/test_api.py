@@ -211,12 +211,10 @@ def test_ldif_modify(slapd):
     ldif_change = ezldap.ldif_read('tests/test_ldif_change.ldif')
     result = slapd.ldif_modify(ldif_change)
     assert result[0]['result'] == 0
-    print(result)
     user = slapd.get_user('ldif_mod_test')
-    #print(user)
-    #TODO nosuchattribute when mail is not originally supplied
+    #TODO test nosuchattribute when mail is not originally supplied
     assert 'test1@ezldap.io' in user['mail']
     assert 'test2@ezldap.io' in user['mail']
-    assert 'sn' not in user.keys()
+    assert 'shadowLastChange' not in user.keys()
     assert 'gecos' not in user.keys()
     assert user['cn'][0] == 'New name'

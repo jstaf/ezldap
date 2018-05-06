@@ -40,9 +40,9 @@ def test_template_content():
 def test_read_ldif_change():
     ldif = ldif_read('tests/test_ldif_change.ldif')
     assert ldif[0]['cn'][0][0] == ldap3.MODIFY_REPLACE
-    assert ldif[0]['cn'][0][1] == 'New name'
+    assert ldif[0]['cn'][0][1][0] == 'New name'
     assert len(ldif[0]['mail']) == 2
-    assert 'sn' in ldif[0].keys()
+    assert 'shadowLastChange' in ldif[0].keys()
 
 
 def test_dash_in_file():
