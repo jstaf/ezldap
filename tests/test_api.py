@@ -14,6 +14,16 @@ def test_bind_success(slapd):
     assert slapd.who_am_i() == 'dn:cn=Manager,dc=ezldap,dc=io'
 
 
+def test_anon_bind(anon):
+    '''
+    Do several tests on the anonymous bind.
+    '''
+    assert anon.who_am_i() is None
+    assert anon.base_dn() == 'dc=ezldap,dc=io'
+    assert len(anon.search_list('(objectClass=organizationalUnit)')) == 2
+    assert len(anon.search_list('(objectClass=applicationProcess)')) == 0
+
+
 def test_base_dn(slapd):
     '''
     Do we retrieve the correct base dn?

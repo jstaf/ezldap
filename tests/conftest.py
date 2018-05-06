@@ -31,3 +31,12 @@ def slapd(docker_ip, docker_services, config):
     '''
     docker_services.wait_until_responsive(timeout=15, pause=0.1, check=ping_slapd)
     return ezldap.auto_bind(config)
+
+
+@pytest.fixture(scope='session')
+def anon(docker_ip, docker_services, config):
+    '''
+    Same as slapd fixture, but an anonymous bind.
+    '''
+    docker_services.wait_until_responsive(timeout=15, pause=0.1, check=ping_slapd)
+    return ezldap.Connection(config['host'])

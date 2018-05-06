@@ -108,6 +108,9 @@ def ldif_print(entries):
 
 
 def _entries_to_handle(entries, handle):
+    '''
+    Write entries to a filehandle.
+    '''
     # because we're modifying the entries contained as we iterate through.
     entries_cp = copy.deepcopy(entries)
     for entry in entries_cp:
