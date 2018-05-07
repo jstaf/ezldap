@@ -259,12 +259,14 @@ def interactive_conf(prompt, default=None):
 
 
 def search(argv):
-    with ezldap.auto_bind() as con:
+    conf = ezldap.config()
+    with ezldap.Connection(conf['host']) as con:
         ezldap.ldif_print(con.search_list(search_filter=argv.filter[0]))
 
 
 def search_dn(argv):
-    with ezldap.auto_bind() as con:
+    conf = ezldap.config()
+    with ezldap.Connection(conf['host']) as con:
         ezldap.ldif_print(con.search_list(search_filter='(dn=*{}*)'.format(argv.keyword)))
 
 
