@@ -29,20 +29,19 @@ def main():
         '(namely LDIF templates).')
     config_parser.set_defaults(func=config)
 
-    search_dn_parser = subparsers.add_parser('search_dn',
-        help='Search for entities by DN keyword.',
-        description='Search LDAP tree for a DN keyword and print resulting LDIF.')
-    search_dn_parser.add_argument('keyword', nargs='?', type=str, default='',
-        help='Keyword to search DNs by (case-sensitive). '
-        'Dumps entire directory if not supplied.')
-    search_dn_parser.set_defaults(func=search_dn)
-
     search_parser = subparsers.add_parser('search',
         help='Search for entities by LDAP filter.',
         description='Search for objects in a directory using LDAP filters.')
     search_parser.add_argument('filter', nargs=1, type=str, default='(objectClass=*)',
         help='LDAP filter to search by, for example: (objectClass=*)')
     search_parser.set_defaults(func=search)
+
+    search_dn_parser = subparsers.add_parser('search_dn',
+        help='Search for DNs in a directory that match a keyword.',
+        description='Search LDAP tree for a DN keyword and a list of matching DNs.')
+    search_dn_parser.add_argument('keyword', nargs='?', type=str, default='',
+        help='Keyword to search DNs by (case-sensitive).')
+    search_dn_parser.set_defaults(func=search_dn)
 
     add_user_parser = subparsers.add_parser('add_user', help='Add a user.',
         description="Creates an LDAP user and add to a group. "
@@ -267,7 +266,13 @@ def search(argv):
 def search_dn(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
-        ezldap.ldif_print(con.search_list(search_filter='(dn=*{}*)'.format(argv.keyword)))
+        # You cannot use dn as a search filter, so we dump all dns and then
+        # search through those ourselves.
+        query = con.search_list_t(attributes=None)
+
+    for dn in query['dn']:
+        if argv.keyword in dn:
+            print(dn)
 
 
 if __name__ == '__main__':

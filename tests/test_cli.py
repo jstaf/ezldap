@@ -30,9 +30,9 @@ def test_search(slapd):
     assert 'dn: ou=People,dc=ezldap,dc=io' in stdout
 
 
-@pytest.mark.skip
 def test_search_dn(slapd):
-    pass
+    stdout = cli('search_dn Manager')
+    assert 'cn=Manager,dc=ezldap,dc=io' in stdout
 
 
 @pytest.mark.skip
