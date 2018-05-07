@@ -188,8 +188,8 @@ class Connection(ldap3.Connection):
 
     def get_user(self, user, basedn=None, index='uid'):
         '''
-        Return given user as a dict. Searches entire directory if no base search
-        dn given.
+        Return given user as a dict or None if none is found. Searches entire
+        directory if no base search dn given.
         '''
         if basedn is None:
             basedn = self.base_dn()
@@ -197,7 +197,7 @@ class Connection(ldap3.Connection):
         try:
             return self.search_list('({}={})'.format(index, user), search_base=basedn)[0]
         except IndexError:
-            raise KeyError('Object "{}" was not found'.format(user))
+            return None
 
 
     def get_group(self, group, basedn=None, index='cn'):

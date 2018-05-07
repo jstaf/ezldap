@@ -215,9 +215,7 @@ def test_ldif_add_fail(slapd):
     ldif = ezldap.ldif_read('tests/test_ldif_add_fail.ldif')
     results = slapd.ldif_add(ldif)
     assert results[0]['result'] != 0
-    with pytest.raises(KeyError) as e:
-        user = slapd.get_user('someuser2')
-        assert 'was not found' in e.value
+    assert slapd.get_user('someuser2') is None
 
 
 def test_ldif_modify(slapd):

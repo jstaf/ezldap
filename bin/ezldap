@@ -133,30 +133,21 @@ def add_user(argv):
     group = argv.groupname
 
     with ezldap.auto_bind() as con:
-        query = con.search_safe(filter='cn={}'.format(group))
-        group_is_local = len(query) == 0 and group is not None
+        if group is None:
+            # No group specified, perform a second check for groups named after
+            # the user, then create it.
+            group = user
+            if con.get_group(group) is None:
+                print('Creating LDAP group {}...'.format(group))
+                con.add_group(group)
+        elif con.get_group(group) is None:
+            sys.exit('Group does not exist.')
 
         passwd = ezldap.random_passwd()
-        print('Password for {} is: {}'.format(user, passwd))
-
-        if group_is_local:
-            try:
-                gr_gid = grp.getgrnam(group).gr_gid
-            except KeyError:
-                sys.exit('Group does not exist.')
-
-            print('Creating user {}, member of local group {}...'.format(user, group))
-            con.add_user(user, None, passwd, gid=gr_gid)
-        else:
-            if group is None:
-                group = user
-                if len(con.search_safe(filter='cn={}'.format(user))) == 0:
-                    print('Creating LDAP group {}...'.format(group))
-                    con.add_group(group)
-
-            print('Creating user {}, member of LDAP group {}'.format(user, group))
-            con.add_user(user, group, passwd)
-            con.add_to_group(user, group)
+        print('Creating user {}, member of LDAP group {}...'.format(user, group))
+        con.add_user(user, group, passwd)
+        con.add_to_group(user, group)
+        print('Password: {}'.format(user, passwd))
 
 
 def change_home(argv):
