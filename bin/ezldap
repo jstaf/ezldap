@@ -260,12 +260,12 @@ def interactive_conf(prompt, default=None):
 
 def search(argv):
     with ezldap.auto_bind() as con:
-        ezldap.ldif_print(con.search_list(filter=argv.filter[0]))
+        ezldap.ldif_print(con.search_list(search_filter=argv.filter[0]))
 
 
 def search_dn(argv):
     with ezldap.auto_bind() as con:
-        ezldap.ldif_print(con.search_safe(filter='(dn=*{}*)'.format(argv.keyword)))
+        ezldap.ldif_print(con.search_list(search_filter='(dn=*{}*)'.format(argv.keyword)))
 
 
 if __name__ == '__main__':

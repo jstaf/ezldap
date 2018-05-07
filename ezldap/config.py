@@ -10,11 +10,14 @@ import yaml
 def config(path=None):
     '''
     Attempts to generate a dictionary of config values for LDAP details from
-    the following config files, in order:
-    ~/.ezldap/config.yml, /etc/openldap/ldap.conf + /usr/bin/ldapwhoami
+    the following config files, in order: the environment variable EZLDAP_CONFIG,
+    ~/.ezldap/config.yml, or guess from /etc/openldap/ldap.conf + /usr/bin/ldapwhoami.
     '''
     if path is not None:
         return yaml.load(open(os.path.expanduser(path)))
+    elif 'EZLDAP_CONFIG' in os.environ.keys():
+        # EZLDAP_CONFIG will have already been expanded by the user's shell
+        return yaml.load(open(os.environ['EZLDAP_CONFIG']))
     elif os.path.exists(os.path.expanduser('~/.ezldap/config.yml')):
         return yaml.load(open(os.path.expanduser('~/.ezldap/config.yml')))
     else:
