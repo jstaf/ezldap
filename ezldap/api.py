@@ -161,11 +161,6 @@ class Connection(ldap3.Connection):
         return DataFrame(query)
 
 
-    def search_ldif():
-        #TODO needs implementation
-        pass
-
-
     def next_uidn(self, search_filter='(objectClass=posixAccount)',
         search_base=None, uid_start=10000, uid_attribute='uidNumber'):
         """

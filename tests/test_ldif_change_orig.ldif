@@ -13,7 +13,6 @@ gecos: deleteme
 shadowMax: 180
 shadowWarning: 7
 shadowLastChange: 0
-mail: test@test.com
 homeDirectory: /home/ldif_mod_test
 
 dn: cn=ldif_mod_change_group,ou=Group,dc=ezldap,dc=io

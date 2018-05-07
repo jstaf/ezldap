@@ -229,7 +229,6 @@ def test_ldif_modify(slapd):
     result = slapd.ldif_modify(ldif_change)
     assert result[0]['result'] == 0
     user = slapd.get_user('ldif_mod_test')
-    #TODO test nosuchattribute when mail is not originally supplied
     assert 'test1@ezldap.io' in user['mail']
     assert 'test2@ezldap.io' in user['mail']
     assert 'shadowLastChange' not in user.keys()

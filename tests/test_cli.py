@@ -54,10 +54,11 @@ def test_add_user_nogroup(slapd):
     '''
     username = 'cli_testuser'
     cli('add_user ' + username)
-    group = slapd.get_group(username)
-    assert group['cn'][0] == username
     user = slapd.get_user(username)
     assert user['uid'][0] == username
+    group = slapd.get_group(username)
+    assert group['cn'][0] == username
+    assert username in group['memberUid']
 
 
 def test_add_user_wgroup(slapd):
