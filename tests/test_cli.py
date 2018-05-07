@@ -40,9 +40,17 @@ def test_add_user(slapd):
     pass
 
 
-@pytest.mark.skip
 def test_add_group(slapd):
-    pass
+    cli('add_group cli_testgroup')
+    group1 = slapd.get_group('cli_testgroup')
+    assert group1['cn'][0] == 'cli_testgroup'
+
+
+def test_add_group_bygid(slapd):
+    cli('add_group cli_testgroup2 44444')
+    group2 = slapd.get_group('cli_testgroup2')
+    assert group2['cn'][0] == 'cli_testgroup2'
+    assert group2['gidNumber'][0] == 44444
 
 
 @pytest.mark.skip
