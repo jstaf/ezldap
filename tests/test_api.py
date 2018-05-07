@@ -60,6 +60,15 @@ def test_search_list_t(slapd):
     assert set(fail['dn']) == set()
 
 
+def test_search_list_t_noattr(slapd):
+    '''
+    When not searching for an attribute, search_list_t should only return
+    a dict with one entry: dn.
+    '''
+    query = slapd.search_list_t(attributes=None)
+    assert None not in query.keys()
+
+
 def test_search_list_t_attribute_nonlist(slapd):
     '''
     Does search_list_t fail if attributes is not a list?

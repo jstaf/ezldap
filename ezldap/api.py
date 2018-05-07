@@ -113,6 +113,9 @@ class Connection(ldap3.Connection):
             # iterate through and determine all possible attributes returned
             for res in response:
                 all_attribs.update(res.keys())
+        elif attributes is None:
+            # skip over this case, we do not want a list of None
+            pass
         else:
             if not isinstance(attributes, list):
                 attributes = [attributes]
