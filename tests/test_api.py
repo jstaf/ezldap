@@ -5,7 +5,7 @@ Test ldap operations on a test instance of slapd.
 import pytest
 import ezldap
 
-prefix = 'ezldap/templates/'
+PREFIX = 'ezldap/templates/'
 
 def test_bind_success(slapd):
     '''
@@ -84,7 +84,7 @@ def test_search_list_t_num_unpacking(slapd, config):
     Does search_list_t()'s unpack_lists fail when unpacking lists of numbers?
     '''
     slapd.add_group('unpack_lists_test',
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     assert len(slapd.search_list_t('(objectClass=posixGroup)')) > 0
 
 
@@ -106,9 +106,9 @@ def test_add_group(slapd, config):
     '''
     Test adding a group.
     '''
-    slapd.add_group('testgroup', ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    slapd.add_group('testgroup', ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     assert slapd.get_group('testgroup')['dn'][0] == 'cn=testgroup,ou=Group,dc=ezldap,dc=io'
-    slapd.add_group('testgroup2', gid=50000, ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+    slapd.add_group('testgroup2', gid=50000, ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     assert slapd.get_group('testgroup2')['gidNumber'][0] == 50000
 
 
@@ -117,15 +117,15 @@ def test_add_user(slapd, config):
     Test adding a user to an existing group.
     '''
     slapd.add_group('adduser', gid=50001,
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     # by groupname
     slapd.add_user('user1', 'adduser', 'test1234',
-                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
+                   ldif_path=PREFIX+'ldap-add-user.ldif', conf=config)
     assert slapd.get_user('user1')['uid'][0] == 'user1'
 
     # by gid
     slapd.add_user('user2', None, 'test1234', gid=50001,
-                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
+                   ldif_path=PREFIX+'ldap-add-user.ldif', conf=config)
     query = slapd.get_user('user2')
     assert query['dn'][0] == 'uid=user2,ou=People,dc=ezldap,dc=io'
 
@@ -139,11 +139,11 @@ def test_add_to_group(slapd, config):
     Test adding a user to a group using ldif templates.
     '''
     slapd.add_group('group_for_user',
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     slapd.add_user('user1234', 'group_for_user', 'password123456',
-                   ldif_path=prefix+'ldap-add-user.ldif', conf=config)
+                   ldif_path=PREFIX+'ldap-add-user.ldif', conf=config)
     slapd.add_to_group('user1234', 'group_for_user',
-                       ldif_path=prefix+'ldap-add-user-to-group.ldif', conf=config)
+                       ldif_path=PREFIX+'ldap-add-user-to-group.ldif', conf=config)
     assert 'user1234' in slapd.get_group('group_for_user')['memberUid']
 
 
@@ -152,7 +152,7 @@ def test_modify_add(slapd, config):
     Does modify_add() add entries properly?
     '''
     slapd.add_group('modify_add',
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     slapd.modify_add('cn=modify_add,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
     group = slapd.get_group('modify_add')
     assert len(group['cn']) == 2
@@ -164,7 +164,7 @@ def test_modify_replace(slapd, config):
     Does modify_replace() replace entries properly?
     '''
     slapd.add_group('modify_replace',
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     slapd.modify_add('cn=modify_replace,ou=Group,dc=ezldap,dc=io', 'memberUid', 'test')
     slapd.modify_replace('cn=modify_replace,ou=Group,dc=ezldap,dc=io', 'memberUid', 'work_please')
     group = slapd.get_group('modify_replace')
@@ -177,7 +177,7 @@ def test_modify_delete(slapd, config):
     Does modify_delete() delete entries properly?
     '''
     slapd.add_group('modify_delete',
-                    ldif_path=prefix+'ldap-add-group.ldif', conf=config)
+                    ldif_path=PREFIX+'ldap-add-group.ldif', conf=config)
     # test delete from multiple attributes
     slapd.modify_add('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'cn', 'added')
     slapd.modify_delete('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'cn', 'added')

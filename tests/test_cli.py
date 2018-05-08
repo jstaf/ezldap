@@ -6,6 +6,7 @@ import subprocess
 import pytest
 import ezldap
 
+PREFIX = 'ezldap/templates/'
 
 def syscall(call):
     '''
@@ -39,13 +40,13 @@ def test_search_dn(slapd):
 
 
 def test_add_group(slapd):
-    cli('add_group cli_testgroup')
+    cli('add_group --ldif {}/ldap-add-group.ldif cli_testgroup'.format(PREFIX))
     group1 = slapd.get_group('cli_testgroup')
     assert group1['cn'][0] == 'cli_testgroup'
 
 
 def test_add_group_bygid(slapd):
-    cli('add_group cli_testgroup2 44444')
+    cli('add_group --ldif {}/ldap-add-group.ldif cli_testgroup2 44444'.format(PREFIX))
     group2 = slapd.get_group('cli_testgroup2')
     assert group2['cn'][0] == 'cli_testgroup2'
     assert group2['gidNumber'][0] == 44444
@@ -69,8 +70,8 @@ def test_add_user_wgroup(slapd):
     Are users properly created and added to the group when the group already exists?
     '''
     username, groupname = 'cli_testuser_wgroup', 'cli_user_wgroup'
-    cli('add_group ' + groupname)
-    cli('add_user {} {}'.format(username, groupname))
+    cli('add_group --ldif {}/ldap-add-group.ldif {}'.format(PREFIX, groupname))
+    cli('add_user --ldif {}/ldap-add-user.ldif {} {}'.format(PREFIX, username, groupname))
     group = slapd.get_group(groupname)
     assert username in group['memberUid']
     user = slapd.get_user(username)

@@ -62,6 +62,9 @@ def main():
     add_group_parser.add_argument('gid', nargs='?', type=str, default=None,
         help='GID number of group to create. '
         'If not supplied, uses next available GID number.')
+    add_group_parser.add_argument('--ldif', nargs=1, type=str,
+        default='~/.ezldap/ldap-add-group.ldif',
+        help='Path of LDIF template to use when performing this operation.')
     add_group_parser.set_defaults(func=add_group)
 
     add_to_group_parser = subparsers.add_parser('add_to_group',
@@ -71,6 +74,9 @@ def main():
         help='An LDAP username to add to a group.')
     add_to_group_parser.add_argument('groupname', nargs=1, type=str,
         help='An LDAP groupname to add to a group.')
+    add_to_group_parser.add_argument('--ldif', nargs=1, type=str,
+        default='~/.ezldap/ldap-add-user-to-group.ldif',
+        help='Path of LDIF template to use when performing this operation.')
     add_to_group_parser.set_defaults(func=add_to_group)
 
     change_home_parser = subparsers.add_parser('change_home',
@@ -120,7 +126,7 @@ def add_group(argv):
         if gid is None:
             gid = con.next_gidn()
 
-        con.add_group(argv.groupname[0], gid=gid)
+        con.add_group(argv.groupname[0], gid=gid, ldif_path=argv.ldif[0])
 
 
 def add_to_group(argv):

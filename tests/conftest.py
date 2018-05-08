@@ -7,6 +7,7 @@ import subprocess
 import pytest
 import ezldap
 
+PREFIX = 'ezldap/templates/'
 
 def ping_slapd():
     '''
