@@ -14,6 +14,9 @@ def syscall(call):
     proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             shell=True, universal_newlines=True)
     stdout, stderr = proc.communicate()
+    if proc.returncode > 0:
+        raise subprocess.SubprocessError(stdout)
+
     return stdout
 
 
