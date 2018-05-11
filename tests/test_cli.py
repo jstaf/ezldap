@@ -86,9 +86,18 @@ def test_add_user_wgroup(slapd):
     assert user['uid'][0] == username
 
 
-@pytest.mark.skip
 def test_add_to_group(slapd):
-    pass
+    username = 'cli_ag_user'
+    groupname = 'cli_ag'
+    cli('add_user '
+        '--ldif-user {}/add_user.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
+        '{}'.format(PREFIX, PREFIX, PREFIX, username))
+    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+    cli('add_to_group --ldif {}/add_to_group.ldif {} {}'.format(PREFIX, username, groupname))
+    group = slapd.get_group(groupname)
+    assert username in group['memberUid']
 
 
 @pytest.mark.skip
