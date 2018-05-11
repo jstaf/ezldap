@@ -40,13 +40,13 @@ def test_search_dn(slapd):
 
 
 def test_add_group(slapd):
-    cli('add_group --ldif {}/ldap-add-group.ldif cli_testgroup'.format(PREFIX))
+    cli('add_group --ldif {}/add_group.ldif cli_testgroup'.format(PREFIX))
     group1 = slapd.get_group('cli_testgroup')
     assert group1['cn'][0] == 'cli_testgroup'
 
 
 def test_add_group_bygid(slapd):
-    cli('add_group --ldif {}/ldap-add-group.ldif cli_testgroup2 44444'.format(PREFIX))
+    cli('add_group --ldif {}/add_group.ldif cli_testgroup2 44444'.format(PREFIX))
     group2 = slapd.get_group('cli_testgroup2')
     assert group2['cn'][0] == 'cli_testgroup2'
     assert group2['gidNumber'][0] == 44444
@@ -58,9 +58,9 @@ def test_add_user_nogroup(slapd):
     '''
     username = 'cli_testuser'
     cli('add_user '
-        '--ldif-user {}/ldap-add-user.ldif '
-        '--ldif-group {}/ldap-add-group.ldif '
-        '--ldif-add-to-group {}/ldap-add-user-to-group.ldif '
+        '--ldif-user {}/add_user.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
         '{}'.format(PREFIX, PREFIX, PREFIX, username))
     user = slapd.get_user(username)
     assert user['uid'][0] == username
@@ -74,11 +74,11 @@ def test_add_user_wgroup(slapd):
     Are users properly created and added to the group when the group already exists?
     '''
     username, groupname = 'cli_testuser_wgroup', 'cli_user_wgroup'
-    cli('add_group --ldif {}/ldap-add-group.ldif {}'.format(PREFIX, groupname))
+    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
     cli('add_user '
-        '--ldif-user {}/ldap-add-user.ldif '
-        '--ldif-group {}/ldap-add-group.ldif '
-        '--ldif-add-to-group {}/ldap-add-user-to-group.ldif '
+        '--ldif-user {}/add_user.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
         '{} {}'.format(PREFIX, PREFIX, PREFIX, username, groupname))
     group = slapd.get_group(groupname)
     assert username in group['memberUid']

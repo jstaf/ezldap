@@ -258,7 +258,7 @@ class Connection(ldap3.Connection):
 
 
     def add_group(self, groupname, conf=None,
-        ldif_path='~/.ezldap/ldap-add-group.ldif', **kwargs):
+        ldif_path='~/.ezldap/add_group.ldif', **kwargs):
         """
         Adds a group from an LDIF template.
         """
@@ -275,7 +275,7 @@ class Connection(ldap3.Connection):
 
 
     def add_to_group(self, username, groupname, conf=None,
-        ldif_path='~/.ezldap/ldap-add-user-to-group.ldif', **kwargs):
+        ldif_path='~/.ezldap/add_to_group.ldif', **kwargs):
         """
         Adds a user to a group.
         The user and group in question must already exist.
@@ -293,7 +293,7 @@ class Connection(ldap3.Connection):
 
 
     def add_user(self, username, groupname, password, conf=None,
-        ldif_path='~/.ezldap/ldap-add-user.ldif', **kwargs):
+        ldif_path='~/.ezldap/add_user.ldif', **kwargs):
         '''
         Adds a user. Does not create or modify groups.
         "groupname" may be None if "gid" is specified.

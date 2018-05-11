@@ -8,7 +8,7 @@ from io import StringIO
 import ldap3
 from ezldap import ldif_read
 
-template = 'ezldap/templates/ldap-add-group.ldif'
+template = 'ezldap/templates/add_group.ldif'
 
 def test_incomplete_templating():
     '''
