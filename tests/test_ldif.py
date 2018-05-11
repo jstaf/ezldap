@@ -9,6 +9,7 @@ import ldap3
 from ezldap import ldif_read
 
 template = 'ezldap/templates/add_group.ldif'
+LDIF_PREFIX = 'tests/ldif/'
 
 def test_incomplete_templating():
     '''
@@ -38,7 +39,7 @@ def test_template_content():
 
 
 def test_read_ldif_change():
-    ldif = ldif_read('tests/test_ldif_change.ldif')
+    ldif = ldif_read(LDIF_PREFIX+'test_ldif_change.ldif')
     assert ldif[0]['cn'][0][0] == ldap3.MODIFY_REPLACE
     assert ldif[0]['cn'][0][1][0] == 'New name'
     assert len(ldif[0]['mail']) == 2
@@ -46,6 +47,6 @@ def test_read_ldif_change():
 
 
 def test_dash_in_file():
-    ldif = ldif_read('tests/test_ldif_change.ldif')
+    ldif = ldif_read(LDIF_PREFIX+'test_ldif_change.ldif')
     for key in ldif[0].keys():
         assert key.strip()[0] not in {'#', '-'}

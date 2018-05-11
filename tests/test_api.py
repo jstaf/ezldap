@@ -6,6 +6,7 @@ import pytest
 import ezldap
 
 PREFIX = 'ezldap/templates/'
+LDIF_PREFIX = 'tests/ldif/'
 
 def test_bind_success(slapd):
     '''
@@ -198,7 +199,7 @@ def test_ldif_add(slapd):
     '''
     Does Connection.ldif_add() add entries properly?
     '''
-    ldif = ezldap.ldif_read('tests/test_ldif_add.ldif')
+    ldif = ezldap.ldif_read(LDIF_PREFIX+'test_ldif_add.ldif')
     results = slapd.ldif_add(ldif)
     assert results[0]['result'] == 0
     assert results[1]['result'] == 0
@@ -212,7 +213,7 @@ def test_ldif_add_fail(slapd):
     '''
     Does Connection.ldif_add() add entries properly?
     '''
-    ldif = ezldap.ldif_read('tests/test_ldif_add_fail.ldif')
+    ldif = ezldap.ldif_read(LDIF_PREFIX+'test_ldif_add_fail.ldif')
     results = slapd.ldif_add(ldif)
     assert results[0]['result'] != 0
     assert slapd.get_user('someuser2') is None
@@ -223,9 +224,9 @@ def test_ldif_modify(slapd):
     Add an object then modify it with a giant ldif-change LDIF to test the
     ldif_modify method.
     '''
-    ldif = ezldap.ldif_read('tests/test_ldif_change_orig.ldif')
+    ldif = ezldap.ldif_read(LDIF_PREFIX+'test_ldif_change_orig.ldif')
     slapd.ldif_add(ldif)
-    ldif_change = ezldap.ldif_read('tests/test_ldif_change.ldif')
+    ldif_change = ezldap.ldif_read(LDIF_PREFIX+'test_ldif_change.ldif')
     result = slapd.ldif_modify(ldif_change)
     assert result[0]['result'] == 0
     user = slapd.get_user('ldif_mod_test')
