@@ -2,11 +2,13 @@
 Test the ezldap CLI and ensure it works properly.
 '''
 
+import re
 import subprocess
 import pytest
 import ezldap
 
 PREFIX = 'ezldap/templates/'
+
 
 def syscall(call):
     '''
@@ -23,6 +25,14 @@ def syscall(call):
 
 def cli(call):
     return syscall('EZLDAP_CONFIG=tests/ezldap_config.yml ezldap ' + call)
+
+
+def add_testuser(username):
+    cli('add_user '
+        '--ldif-user {}/add_user.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
+        '{}'.format(PREFIX, PREFIX, PREFIX, username))
 
 
 def test_search(slapd):
@@ -57,11 +67,7 @@ def test_add_user_nogroup(slapd):
     Are users properly created when no group exists?
     '''
     username = 'cli_testuser'
-    cli('add_user '
-        '--ldif-user {}/add_user.ldif '
-        '--ldif-group {}/add_group.ldif '
-        '--ldif-add-to-group {}/add_to_group.ldif '
-        '{}'.format(PREFIX, PREFIX, PREFIX, username))
+    add_testuser(username)
     user = slapd.get_user(username)
     assert user['uid'][0] == username
     group = slapd.get_group(username)
@@ -89,30 +95,36 @@ def test_add_user_wgroup(slapd):
 def test_add_to_group(slapd):
     username = 'cli_ag_user'
     groupname = 'cli_ag'
-    cli('add_user '
-        '--ldif-user {}/add_user.ldif '
-        '--ldif-group {}/add_group.ldif '
-        '--ldif-add-to-group {}/add_to_group.ldif '
-        '{}'.format(PREFIX, PREFIX, PREFIX, username))
+    add_testuser(username)
     cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
     cli('add_to_group --ldif {}/add_to_group.ldif {} {}'.format(PREFIX, username, groupname))
     group = slapd.get_group(groupname)
     assert username in group['memberUid']
 
 
-@pytest.mark.skip
 def test_change_home(slapd):
-    pass
+    username = 'cli_change_home'
+    add_testuser(username)
+    cli('change_home {} /mnt/data/username'.format(username))
+    user = slapd.get_user(username)
+    assert user['homeDirectory'][0] == '/mnt/data/username'
 
 
-@pytest.mark.skip
 def test_change_shell(slapd):
-    pass
+    username = 'cli_change_shell'
+    add_testuser(username)
+    cli('change_shell {} /usr/sbin/nologin'.format(username))
+    user = slapd.get_user(username)
+    assert user['loginShell'][0] == '/usr/sbin/nologin'
 
 
-@pytest.mark.skip
 def test_change_pw(slapd):
-    pass
+    username = 'cli_change_pw'
+    add_testuser(username)
+    stdout = cli('change_pw {}'.format(username))
+    pw = re.findall(r'- (\w+)', stdout.strip())[0]
+    user = slapd.get_user(username)
+    assert ezldap.ssha_check(user['userPassword'][0], pw)
 
 
 @pytest.mark.skip
