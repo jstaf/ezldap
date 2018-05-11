@@ -57,7 +57,11 @@ def test_add_user_nogroup(slapd):
     Are users properly created when no group exists?
     '''
     username = 'cli_testuser'
-    cli('add_user ' + username)
+    cli('add_user '
+        '--ldif-user {}/ldap-add-user.ldif '
+        '--ldif-group {}/ldap-add-group.ldif '
+        '--ldif-add-to-group {}/ldap-add-user-to-group.ldif '
+        '{}'.format(PREFIX, PREFIX, PREFIX, username))
     user = slapd.get_user(username)
     assert user['uid'][0] == username
     group = slapd.get_group(username)
@@ -71,7 +75,11 @@ def test_add_user_wgroup(slapd):
     '''
     username, groupname = 'cli_testuser_wgroup', 'cli_user_wgroup'
     cli('add_group --ldif {}/ldap-add-group.ldif {}'.format(PREFIX, groupname))
-    cli('add_user --ldif {}/ldap-add-user.ldif {} {}'.format(PREFIX, username, groupname))
+    cli('add_user '
+        '--ldif-user {}/ldap-add-user.ldif '
+        '--ldif-group {}/ldap-add-group.ldif '
+        '--ldif-add-to-group {}/ldap-add-user-to-group.ldif '
+        '{} {}'.format(PREFIX, PREFIX, PREFIX, username, groupname))
     group = slapd.get_group(groupname)
     assert username in group['memberUid']
     user = slapd.get_user(username)

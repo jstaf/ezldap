@@ -53,6 +53,15 @@ def main():
         help="Groupname to add user to. If omitted, creates same-named LDAP group. "
         "If the group is a local group, a new LDAP group will not be created "
         "and an ldap add group operation will not be perfomed.")
+    add_user_parser.add_argument('--ldif-user', nargs=1, type=str,
+        default='~/.ezldap/ldap-add-user.ldif',
+        help='Path of LDIF template to use when adding a user.')
+    add_user_parser.add_argument('--ldif-group', nargs=1, type=str,
+        default='~/.ezldap/ldap-add-group.ldif',
+        help='Path of LDIF template to use when adding a group.')
+    add_user_parser.add_argument('--ldif-add-to-group', nargs=1, type=str,
+        default='~/.ezldap/ldap-add-user-to-group.ldif',
+        help='Path of LDIF template to use when adding a group.')
     add_user_parser.set_defaults(func=add_user)
 
     add_group_parser = subparsers.add_parser('add_group', help='Add a group.',
@@ -131,7 +140,7 @@ def add_group(argv):
 
 def add_to_group(argv):
     with ezldap.auto_bind() as con:
-        con.add_to_group(argv.username[0], argv.groupname[0])
+        con.add_to_group(argv.username[0], argv.groupname[0], ldif_path=argv.ldif[0])
 
 
 def add_user(argv):
@@ -145,14 +154,14 @@ def add_user(argv):
             group = user
             if con.get_group(group) is None:
                 print('Creating LDAP group {}...'.format(group))
-                con.add_group(group)
+                con.add_group(group, ldif_path=argv.ldif_group[0])
         elif con.get_group(group) is None:
             sys.exit('Group does not exist.')
 
         passwd = ezldap.random_passwd()
         print('Creating user {}, member of LDAP group {}...'.format(user, group))
-        con.add_user(user, group, passwd)
-        con.add_to_group(user, group)
+        con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
+        con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
         print('Password: {}'.format(user, passwd))
 
 
