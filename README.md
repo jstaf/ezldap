@@ -14,7 +14,7 @@ The target audience of this package is system administrators and support
 staff who are on a timeline and just need to add a user or write a quick
 script in a portable manner.
 
-So how is `ezldap` different? It is a wrapper around the `python-ldap`
+So how is `ezldap` different? It is a wrapper around the `ldap3`
 API that gives access to easily perform a number of high-level tasks
 like searching an LDAP directory, adding a user and sending them an
 email, or resetting someone's password securely. This process is
@@ -38,13 +38,15 @@ with ezldap.auto_bind() as con:
 
 ## Installation
 
-You'll need a copy of Python 3.4+ and the openldap development headers to start.
+You'll need a copy of Python 3.4+.
+No other dependencies are necessary,
+though `pandas` and the OpenLDAP clients are useful for some use cases.
 
 ### On Centos 7:
 
 ```bash
-sudo yum -y install epel-release openldap-devel openldap-clients gcc gcc-g++
-sudo yum -y install python34 python34-pip python34-devel
+sudo yum install epel-release
+sudo yum install python34 python34-pip python34-devel
 pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```
 
@@ -53,14 +55,13 @@ pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip python3-dev
-sudo apt install ldap-utils libldap-2.4-2 libldap2-dev libsasl2-dev
 pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```
 
 Configure your LDAP connection details with `ldap-config` before using the package.
 You do not need to run this script as root.
 The connection details/LDIF templates/etc. for `ezldap` are stored in `~/.ezldap`.
-Though you can store your bind password here,
+Though you can store your bind password here for convenience,
 I do not recommend doing so, as it will be stored in cleartext.
 You may wish to configure the LDIF templates under `~/.ezldap`
 as well if you intend to use this package's add object functionality.
@@ -76,6 +77,7 @@ Functionality is constantly being added, and the API should not yet be considere
 This package runs a lot of tests against a slapd docker image using `pytest`.
 You'll need [Docker](https://www.docker.com/community-edition),
 [Docker Compose](https://docs.docker.com/compose/install/),
-and and the `openldap-servers`/`slapd` packages as well.
+and and the `openldap-clients` packages as well
+(see `.travis.yml` for a full list of dependencies).
 
 Once all of that is installed, you can run the tests using `pytest`.
