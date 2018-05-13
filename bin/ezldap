@@ -16,8 +16,13 @@ def main():
         formatter_class=lambda prog: argparse.HelpFormatter(prog, indent_increment=1))
     parser.add_argument('-v', '--version', action='version', version=
         '%(prog)s version {}'.format(ezldap.__version__))
-    parser.set_defaults(func=lambda x: parser.print_help())
     subparsers = parser.add_subparsers(title='Valid commands', metavar='')
+
+    def help_msg(_):
+        parser.print_help()
+        print()
+
+    parser.set_defaults(func=help_msg)
 
     # subparsers follow
     config_parser = subparsers.add_parser('config',
