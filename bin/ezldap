@@ -130,6 +130,13 @@ def main():
         description='Print information about the LDAP server you are using.')
     server_info_parser.set_defaults(func=server_info)
 
+    class_info_parser = subparsers.add_parser('class_info',
+        help='Print information about a specific LDAP objectClass.',
+        description='Print information about a specific LDAP objectClass.')
+    class_info_parser.add_argument('objectClass', nargs=1, type=str,
+        help='objectClass to investigate.')
+    class_info_parser.set_defaults(func=class_info)
+
     argv = parser.parse_args()
     argv.func(argv)
 
@@ -290,6 +297,12 @@ def server_info(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
         print(con.server.info)
+
+
+def class_info(argv):
+    conf = ezldap.config()
+    with ezldap.Connection(conf['host']) as con:
+        print(con.server.schema.object_classes[argv.objectClass[0]])
 
 
 if __name__ == '__main__':
