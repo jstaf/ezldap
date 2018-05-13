@@ -59,13 +59,13 @@ def main():
         "If the group is a local group, a new LDAP group will not be created "
         "and an ldap add group operation will not be perfomed.")
     add_user_parser.add_argument('--ldif-user', nargs=1, type=str,
-        default='~/.ezldap/add_user.ldif',
+        default=['~/.ezldap/add_user.ldif'],
         help='Path of LDIF template to use when adding a user.')
     add_user_parser.add_argument('--ldif-group', nargs=1, type=str,
-        default='~/.ezldap/add_group.ldif',
+        default=['~/.ezldap/add_group.ldif'],
         help='Path of LDIF template to use when adding a group.')
     add_user_parser.add_argument('--ldif-add-to-group', nargs=1, type=str,
-        default='~/.ezldap/add_to_group.ldif',
+        default=['~/.ezldap/add_to_group.ldif'],
         help='Path of LDIF template to use when adding a group.')
     add_user_parser.set_defaults(func=add_user)
 
@@ -77,7 +77,7 @@ def main():
         help='GID number of group to create. '
         'If not supplied, uses next available GID number.')
     add_group_parser.add_argument('--ldif', nargs=1, type=str,
-        default='~/.ezldap/add_group.ldif',
+        default=['~/.ezldap/add_group.ldif'],
         help='Path of LDIF template to use when performing this operation.')
     add_group_parser.set_defaults(func=add_group)
 
@@ -89,7 +89,7 @@ def main():
     add_to_group_parser.add_argument('groupname', nargs=1, type=str,
         help='An LDAP groupname to add to a group.')
     add_to_group_parser.add_argument('--ldif', nargs=1, type=str,
-        default='~/.ezldap/add_to_group.ldif',
+        default=['~/.ezldap/add_to_group.ldif'],
         help='Path of LDIF template to use when performing this operation.')
     add_to_group_parser.set_defaults(func=add_to_group)
 
