@@ -307,7 +307,10 @@ def server_info(argv):
 def class_info(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
-        print(con.server.schema.object_classes[argv.objectClass[0]])
+        try:
+            print(con.server.schema.object_classes[argv.objectClass[0]])
+        except KeyError:
+            print('objectClass "{}" not found.'.format(argv.objectClass[0]))
 
 
 if __name__ == '__main__':

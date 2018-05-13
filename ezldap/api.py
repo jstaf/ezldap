@@ -35,6 +35,9 @@ class Connection(ldap3.Connection):
     '''
 
     def __init__(self, host, user=None, password=None, authentication=ldap3.SIMPLE):
+        if host is None:
+            host = 'ldap://localhost'
+
         self.server = ldap3.Server(host, get_info=ldap3.ALL)
         if user is None:
             # anonymous bind
