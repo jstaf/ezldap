@@ -125,6 +125,11 @@ def main():
         'You will otherwise be prompted for the password hash.')
     check_pw_parser.set_defaults(func=check_pw)
 
+    server_info_parser = subparsers.add_parser('server_info',
+        help='Print information about the LDAP server you are using.',
+        description='Print information about the LDAP server you are using.')
+    server_info_parser.set_defaults(func=server_info)
+
     argv = parser.parse_args()
     argv.func(argv)
 
@@ -279,6 +284,12 @@ def search_dn(argv):
     for dn in query['dn']:
         if argv.keyword in dn:
             print(dn)
+
+
+def server_info(argv):
+    conf = ezldap.config()
+    with ezldap.Connection(conf['host']) as con:
+        print(con.server.info)
 
 
 if __name__ == '__main__':
