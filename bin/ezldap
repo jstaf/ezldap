@@ -301,7 +301,7 @@ def search_dn(argv):
 def server_info(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
-        print(con.server.info)
+        print(con.server.info, end='')
 
 
 def class_info(argv):
