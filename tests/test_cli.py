@@ -130,3 +130,23 @@ def test_change_pw(slapd):
 @pytest.mark.skip
 def test_check_pw(slapd):
     pass
+
+
+@pytest.mark.skip
+def test_delete(slapd):
+    pass
+
+
+@pytest.mark.skip
+def test_modify_add(slapd):
+    pass
+
+
+@pytest.mark.skip
+def test_modify_replace(slapd):
+    pass
+
+
+@pytest.mark.skip
+def test_modify_delete(slapd):
+    pass
