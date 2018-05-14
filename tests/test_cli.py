@@ -150,3 +150,8 @@ def test_modify_replace(slapd):
 @pytest.mark.skip
 def test_modify_delete(slapd):
     pass
+
+
+@pytest.mark.skip
+def test_modify_dn(slapd):
+    pass
