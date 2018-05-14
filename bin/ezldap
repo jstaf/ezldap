@@ -6,6 +6,7 @@ import argparse
 import getpass
 import pkg_resources
 
+import ldap3
 import yaml
 import ezldap
 
@@ -206,6 +207,7 @@ def add_user(argv):
         con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
         con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
         print('Password: {}'.format(user, passwd))
+        print('Success!')
 
 
 def modify(argv):
@@ -215,28 +217,42 @@ def modify(argv):
 def delete(argv):
     dn = argv.dn[0]
     with ezldap.auto_bind() as con:
+        #TODO add recursive delete
+        query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
+        if len(query) != 1:
+            sys.exit('Operation failed: DN "{}" not found.'.format(dn))            
+
         if not argv.force:
-            #TODO add recursive delete
-            query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
-            ldif_print(query)
+            ezldap.ldif_print(query)
 
             confirm = input('Delete object? (y/N) ')
             if confirm[0] != 'y':
                 sys.exit('Operation aborted.')
 
-        con.delete(dn)
+        success = con.delete(dn)
+        op_summary(success, con.result)
 
 
 def change_home(argv):
     with ezldap.auto_bind() as con:
-        dn = con.get_user(argv.username[0])['dn'][0]
-        con.modify_replace(dn, 'homeDirectory', argv.homedir[0])
+        try:
+            dn = con.get_user(argv.username[0])['dn'][0]
+        except TypeError:
+            sys.exit('User "{}" not found.'.format(argv.username[0]))
+
+        res = con.modify_replace(dn, 'homeDirectory', argv.homedir[0])
+        op_summary(res['result'] == 0, res)
 
 
 def change_shell(argv):
     with ezldap.auto_bind() as con:
-        dn = con.get_user(argv.username[0])['dn'][0]
-        con.modify_replace(dn, 'loginShell', argv.shell[0])
+        try:
+            dn = con.get_user(argv.username[0])['dn'][0]
+        except TypeError:
+            sys.exit('User "{}" not found.'.format(argv.username[0]))
+
+        res = con.modify_replace(dn, 'loginShell', argv.shell[0])
+        op_summary(res['result'] == 0, res)
 
 
 def change_pw(argv):
@@ -254,9 +270,10 @@ def change_pw(argv):
         try:
             dn = con.get_user(user)['dn'][0]
         except IndexError:
-            sys.exit('User does not exist.')
+            sys.exit('User "{}" does not exist.'.format(user))
 
-        con.modify_replace(dn, 'userPassword', ssha)
+        res = con.modify_replace(dn, 'userPassword', ssha)
+        op_summary(res['result'] == 0, res)
 
 
 def check_pw(argv):
@@ -356,6 +373,16 @@ def class_info(argv):
             print(con.server.schema.object_classes[argv.objectClass[0]])
         except KeyError:
             print('objectClass "{}" not found.'.format(argv.objectClass[0]))
+
+
+def op_summary(success, result):
+    '''
+    Summarize the failure of an operation if one occured.
+    '''
+    if success:
+        print('Success!')
+    else:
+        print('Operation failed: {}.'.format(result['message']))
 
 
 if __name__ == '__main__':
