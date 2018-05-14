@@ -109,6 +109,16 @@ def main():
         help='Value to replace an attribute with when performing a replace operation.')
     modify_parser.set_defaults(func=modify)
 
+
+    delete_desc = 'Delete an entry from an LDAP directory.'
+    delete_parser = subparsers.add_parser('delete', help=delete_desc,
+        description=delete_desc+' Will print the entry and prompt for confirmation.')
+    delete_parser.add_argument('-f', '--force', default=False, const=True, action='store_const',
+        help='Do not print entry and do not prompt for confirmation.')
+    delete_parser.add_argument('dn', nargs=1, type=str,
+        help='Distinguished Name (DN) of object to delete.')
+    delete_parser.set_defaults(func=delete)
+
     ch_home_desc="Change a user's home directory."
     change_home_parser = subparsers.add_parser('change_home',
         help=ch_home_desc, description=ch_home_desc)
@@ -200,6 +210,21 @@ def add_user(argv):
 
 def modify(argv):
     pass
+
+
+def delete(argv):
+    dn = argv.dn[0]
+    with ezldap.auto_bind() as con:
+        if not argv.force:
+            #TODO add recursive delete
+            query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
+            ldif_print(query)
+
+            confirm = input('Delete object? (y/N) ')
+            if confirm[0] != 'y':
+                sys.exit('Operation aborted.')
+
+        con.delete(dn)
 
 
 def change_home(argv):
