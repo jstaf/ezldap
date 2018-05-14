@@ -12,12 +12,15 @@ import hashlib
 import base64
 from random import SystemRandom
 
-def random_passwd(length=10):
+def random_passwd(length=10, ambiguous_chars=False):
     """
-    Generate a readable, random password with no ambiguous characters.
+    Generate a readable, random password with no ambiguous characters
+    (unless you set that option to true, of course).
     """
     chars = string.ascii_letters + string.digits
-    chars = re.sub('[1lIO0]', '', chars)
+    if not ambiguous_chars:
+        chars = re.sub('[1lIO0]', '', chars)
+
     r = SystemRandom()
     return ''.join(r.choice(chars) for char in range(length))
 
