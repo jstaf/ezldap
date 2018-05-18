@@ -26,6 +26,7 @@ setup(
         'pandas',
         'pytest',
         'pytest-docker',
+        'pytest-cov',
         'docker-compose'
     ],
     zip_safe=False

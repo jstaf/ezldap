@@ -4,6 +4,7 @@
 .ropeproject/
 .pytest_cache/
 .ipynb_checkpoints/
+.coverage
 __pycache__/
 dist/
 *.egg-info/
