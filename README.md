@@ -36,13 +36,13 @@ with ezldap.auto_bind() as con:
     con.add_user('username', 'groupname', 'password')
 ```
 
-## Installation
+## installation
 
 You'll need a copy of Python 3.4+.
 No other dependencies are necessary,
 though `pandas` and the OpenLDAP clients are useful for some use cases.
 
-### On Centos 7:
+### centos 7:
 
 ```bash
 sudo yum install epel-release
@@ -50,7 +50,7 @@ sudo yum install python34 python34-pip python34-devel
 pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```
 
-### On Ubuntu 16.04:
+### ubuntu 16.04:
 
 ```bash
 sudo apt update
@@ -66,13 +66,15 @@ I do not recommend doing so, as it will be stored in cleartext.
 You may wish to configure the LDIF templates under `~/.ezldap`
 as well if you intend to use this package's add object functionality.
 
-## Using this package
+## using this package
 
 Refer to the scripts' command-line help (`./script-name -h`) for usage info and documentation.
 Keep in mind this package is under active development and may not be appropriate for all use cases.
 Functionality is constantly being added, and the API should not yet be considered stable.
 
-## Running tests
+For further documentation check out the [wiki](https://github.com/jstaf/ezldap/wiki)
+
+## running tests
 
 This package runs a lot of tests against a slapd docker image using `pytest`.
 You'll need [Docker](https://www.docker.com/community-edition),
