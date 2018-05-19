@@ -19,6 +19,6 @@ install:
   - pip install .
   - pip install pytest-docker pytest-cov docker-compose coveralls
 
-script: pytest --cov ezldap --cov bin
+script: pytest
 
 after_success: coveralls
