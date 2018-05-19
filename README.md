@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/jstaf/ezldap.svg?branch=master)](https://travis-ci.org/jstaf/ezldap)
-
 ezldap
 ---------------------------------------------
+[![Build Status](https://travis-ci.org/jstaf/ezldap.svg?branch=master)](https://travis-ci.org/jstaf/ezldap)
+[![Coverage Status](https://coveralls.io/repos/github/jstaf/ezldap/badge.svg?branch=master)](https://coveralls.io/github/jstaf/ezldap?branch=master)
 
 An object-oriented Python LDAP API and set of bundled scripts to make
 common LDAP tasks easier.
