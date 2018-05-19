@@ -17,7 +17,7 @@ before_install:
 
 install:
   - pip install .
-  - pip install pytest-docker pytest-cov docker-compose pandas coveralls
+  - pip install pytest-docker pytest-cov docker-compose coveralls
 
 script: pytest --cov ezldap --cov bin
 

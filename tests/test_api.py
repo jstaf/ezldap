@@ -89,6 +89,7 @@ def test_search_list_t_num_unpacking(slapd, config):
     assert len(slapd.search_list_t('(objectClass=posixGroup)')) > 0
 
 
+@pytest.mark.skip
 def test_search_df(slapd):
     '''
     Does the search_df function return a Pandas DataFrame and is it collapsing
