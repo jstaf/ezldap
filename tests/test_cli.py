@@ -195,6 +195,24 @@ def test_modify_delete_all(slapd):
     assert 'gecos' not in slapd.get_user(user).keys()
 
 
+def test_modify_dn_relative(slapd):
+    cli('add_group mdn_relative')
+    cli('modify_dn cn=mdn_relative,ou=Group,dc=ezldap,dc=io cn=mdn_new,ou=Group,dc=ezldap,dc=io')
+    assert slapd.exists('cn=mdn_new,ou=Group,dc=ezldap,dc=io')
+
+
+def test_modify_dn_superior(slapd):
+    cli('add_group mdn_superior')
+    cli('modify_dn cn=mdn_superior,ou=Group,dc=ezldap,dc=io cn=mdn_superior,ou=People,dc=ezldap,dc=io')
+    assert slapd.exists('cn=mdn_superior,ou=People,dc=ezldap,dc=io')
+
+
+def test_modify_dn_complete(slapd):
+    cli('add_group mdn_complete')
+    cli('modify_dn cn=mdn_complete,ou=Group,dc=ezldap,dc=io cn=complete,ou=People,dc=ezldap,dc=io')
+    assert slapd.exists('cn=complete,ou=People,dc=ezldap,dc=io')
+
+
 def test_server_info(slapd):
     stdout = cli('server_info')
     assert 'dc=ezldap,dc=io' in stdout
@@ -206,7 +224,3 @@ def test_class_info(slapd):
     assert 'Internet Organizational Person' in stdout
     stdout = cli('class_info asdf')
     assert 'not found' in stdout
-
-@pytest.mark.skip
-def test_modify_dn(slapd):
-    pass
