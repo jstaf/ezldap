@@ -4,7 +4,6 @@ Bind to an LDAP directory and perform various operations.
 
 import sys
 import getpass
-import re
 import copy
 
 import ldap3

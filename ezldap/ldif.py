@@ -78,7 +78,7 @@ def ldif_read(path, replacements=None):
                     # not the most efficient, but is an easier implementation
                     value = (operations[next_change_type], [value])
                 else:
-                    raise ValueError('Attribute does not match attribute to {}.'.format(next_change))
+                    raise ValueError('Attribute does not match attribute to {}.'.format(next_change_type))
 
             entry[key].append(value)
 

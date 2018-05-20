@@ -4,7 +4,6 @@ Ideally the user should have to do nothing aside from specify a password.
 '''
 
 import os
-import subprocess
 import yaml
 
 def config(path=None):
