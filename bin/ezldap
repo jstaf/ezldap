@@ -56,7 +56,6 @@ def main():
         "Prints the randomly generated password to stdout.")
     add_user_parser.add_argument('username', nargs=1, type=str,
         help="Username to create.")
-    #TODO does this default need to be [None]?
     add_user_parser.add_argument('groupname', nargs='?', type=str, default=None,
         help="Groupname to add user to. If omitted, creates same-named LDAP group. "
         "If the group is a local group, a new LDAP group will not be created "
@@ -76,7 +75,6 @@ def main():
         description="Creates an LDAP group using a presupplied LDIF template.")
     add_group_parser.add_argument('groupname', nargs=1, type=str,
         help='LDAP group name to create.')
-    #TODO does this default need to be [None]?
     add_group_parser.add_argument('gid', nargs='?', type=str, default=None,
         help='GID number of group to create. '
         'If not supplied, uses next available GID number.')

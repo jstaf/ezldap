@@ -35,6 +35,14 @@ def add_testuser(username):
         '{}'.format(PREFIX, PREFIX, PREFIX, username))
 
 
+def test_parser_syntax():
+    '''
+    If this test fails, theres a bug in the argparse syntax.
+    '''
+    stdout = cli('')
+    assert 'Valid commands:' in stdout
+
+
 def test_search(slapd):
     '''
     Does the search CLI successfully spit out a nice LDIF?
