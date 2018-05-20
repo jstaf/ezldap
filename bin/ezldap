@@ -112,6 +112,13 @@ def main():
         help='Value to replace an attribute with when performing a replace operation.')
     modify_parser.set_defaults(func=modify)
 
+    modify_dn_desc = 'Rename the DN of and/or move an entry.'
+    modify_dn_parser = subparsers.add_parser('modify_dn', help=modify_dn_desc,
+        description=modify_dn_desc + ' Note that this tool allows you to rename '
+        'and move an entry in a single command.')
+    modify_dn_parser.add_argument('dn', nargs=1, type=str, help='DN of entry to be moved.')
+    modify_dn_parser.add_argument('new_dn', nargs=1, type=str, help='New DN of entry.')
+    modify_dn_parser.set_defaults(func=modify_dn)
 
     delete_desc = 'Delete an entry from an LDAP directory.'
     delete_parser = subparsers.add_parser('delete', help=delete_desc,
@@ -235,6 +242,37 @@ def modify(argv):
             sys.exit('Unrecognized command.')
 
         op_summary(res['result'] == 0, res)
+
+
+def separate_dn(dn):
+    chunks = dn.split(',')
+    return (chunks[0], ','.join(chunks[1:]))
+
+
+def modify_dn(argv):
+    dn = argv.dn[0]
+    relative_old, superior_old = separate_dn(dn)
+
+    new_dn = argv.new_dn[0]
+    relative_new, superior_new = separate_dn(new_dn)
+
+    if dn == new_dn:
+        sys.exit('Operation failed: DNs are the same.')
+
+    with ezldap.auto_bind() as con:
+        assert_dn_exists(con, dn)
+
+        if relative_old != relative_new:
+            res = con.modify_dn(dn, relative_new)
+            dn = relative_new + ',' + superior_old
+            relative_old = relative_new
+            if not res:
+                op_summary(res, con.result)
+
+        if superior_old != superior_new:
+            res = con.modify_dn(dn, relative_old, new_superior=superior_new)
+
+        op_summary(res, con.result)
 
 
 def delete(argv):

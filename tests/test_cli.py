@@ -35,6 +35,10 @@ def add_testuser(username):
         '{}'.format(PREFIX, PREFIX, PREFIX, username))
 
 
+def add_testgroup(groupname):
+    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+
+
 def test_parser_syntax():
     '''
     If this test fails, theres a bug in the argparse syntax.
@@ -104,7 +108,7 @@ def test_add_to_group(slapd):
     username = 'cli_ag_user'
     groupname = 'cli_ag'
     add_testuser(username)
-    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+    add_testgroup(groupname)
     cli('add_to_group --ldif {}/add_to_group.ldif {} {}'.format(PREFIX, username, groupname))
     group = slapd.get_group(groupname)
     assert username in group['memberUid']
@@ -142,7 +146,7 @@ def test_check_pw(slapd):
 
 def test_delete(slapd):
     groupname = 'deleteme'
-    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+    add_testgroup(groupname)
     group = slapd.get_group(groupname)
     assert group is not None
     groupdn = group['dn'][0]
@@ -196,19 +200,19 @@ def test_modify_delete_all(slapd):
 
 
 def test_modify_dn_relative(slapd):
-    cli('add_group mdn_relative')
+    add_testgroup('mdn_relative')
     cli('modify_dn cn=mdn_relative,ou=Group,dc=ezldap,dc=io cn=mdn_new,ou=Group,dc=ezldap,dc=io')
     assert slapd.exists('cn=mdn_new,ou=Group,dc=ezldap,dc=io')
 
 
 def test_modify_dn_superior(slapd):
-    cli('add_group mdn_superior')
+    add_testgroup('mdn_superior')
     cli('modify_dn cn=mdn_superior,ou=Group,dc=ezldap,dc=io cn=mdn_superior,ou=People,dc=ezldap,dc=io')
     assert slapd.exists('cn=mdn_superior,ou=People,dc=ezldap,dc=io')
 
 
 def test_modify_dn_complete(slapd):
-    cli('add_group mdn_complete')
+    add_testgroup('mdn_complete')
     cli('modify_dn cn=mdn_complete,ou=Group,dc=ezldap,dc=io cn=complete,ou=People,dc=ezldap,dc=io')
     assert slapd.exists('cn=complete,ou=People,dc=ezldap,dc=io')
 
