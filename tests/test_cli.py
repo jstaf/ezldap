@@ -195,6 +195,18 @@ def test_modify_delete_all(slapd):
     assert 'gecos' not in slapd.get_user(user).keys()
 
 
+def test_server_info(slapd):
+    stdout = cli('server_info')
+    assert 'dc=ezldap,dc=io' in stdout
+    assert 'StartTLS' in stdout
+
+
+def test_class_info(slapd):
+    stdout = cli('class_info inetOrgPerson')
+    assert 'Internet Organizational Person' in stdout
+    stdout = cli('class_info asdf')
+    assert 'not found' in stdout
+
 @pytest.mark.skip
 def test_modify_dn(slapd):
     pass

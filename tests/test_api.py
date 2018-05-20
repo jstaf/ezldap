@@ -8,6 +8,11 @@ import ezldap
 PREFIX = 'ezldap/templates/'
 LDIF_PREFIX = 'tests/ldif/'
 
+def test_ping(slapd, config):
+    assert ezldap.ping(config['host'])
+    assert not ezldap.ping('ldap://localhost:1234')
+
+
 def test_bind_success(slapd):
     '''
     If this fails, the bind has failed.
