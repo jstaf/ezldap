@@ -28,7 +28,7 @@ def guess_config():
     base = get_ldap_conf_val('BASE')
     conf = {
         'host': get_ldap_conf_val('URI'),
-        'binddn': None,
+        'binddn': 'cn=Manager,{}'.format(base),
         'bindpw': None,
         'peopledn': 'ou=People,{}'.format(base),
         'groupdn': 'ou=Group,{}'.format(base),
