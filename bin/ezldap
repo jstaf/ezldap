@@ -56,6 +56,7 @@ def main():
         "Prints the randomly generated password to stdout.")
     add_user_parser.add_argument('username', nargs=1, type=str,
         help="Username to create.")
+    #TODO does this default need to be [None]?
     add_user_parser.add_argument('groupname', nargs='?', type=str, default=None,
         help="Groupname to add user to. If omitted, creates same-named LDAP group. "
         "If the group is a local group, a new LDAP group will not be created "
@@ -75,6 +76,7 @@ def main():
         description="Creates an LDAP group using a presupplied LDIF template.")
     add_group_parser.add_argument('groupname', nargs=1, type=str,
         help='LDAP group name to create.')
+    #TODO does this default need to be [None]?
     add_group_parser.add_argument('gid', nargs='?', type=str, default=None,
         help='GID number of group to create. '
         'If not supplied, uses next available GID number.')
@@ -103,10 +105,12 @@ def main():
     modify_parser.add_argument('operation', nargs=1, type=str,
         choices=['add', 'replace', 'delete'],
         help='Type of operation to perform. Can be one of: add, replace, delete.')
+    modify_parser.add_argument('attribute', nargs=1, type=str,
+        help='Attribute to modify.')
     modify_parser.add_argument('value', nargs=1, type=str,
         help='Value to add, replace, or delete. '
         'When performing a delete operation, passing "-" will delete all values for that attribute.')
-    modify_parser.add_argument('replace_with', nargs='?', type=str,
+    modify_parser.add_argument('replace_with', nargs='?', type=str, default=None,
         help='Value to replace an attribute with when performing a replace operation.')
     modify_parser.set_defaults(func=modify)
 
@@ -212,22 +216,34 @@ def add_user(argv):
 
 def modify(argv):
     op = argv.operation[0]
-    if op == 'add':
-        print('add')
-    elif op == 'replace':
-        print('replace')
-    elif op == 'delete':
-        print('delete')
+    dn = argv.dn[0]
+    attrib = argv.attribute[0]
+    value = argv.value[0]
+    with ezldap.auto_bind() as con:
+        assert_dn_exists(con, dn)
+
+        if op == 'add':
+            res = con.modify_add(dn, attrib, value)
+        elif op == 'replace':
+            res = con.modify_replace(dn, attrib, value, replace_with=argv.replace_with)
+        elif op == 'delete':
+            if value == '-':
+                # delete all values
+                value = None
+
+            res = con.modify_delete(dn, attrib, value)
+        else:
+            # should never get here, just being safe.
+            sys.exit('Unrecognized command.')
+
+        op_summary(res['result'] == 0, res)
 
 
 def delete(argv):
     dn = argv.dn[0]
     with ezldap.auto_bind() as con:
         #TODO add recursive delete
-        query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
-        if len(query) != 1:
-            sys.exit('Operation failed: DN "{}" not found.'.format(dn))
-
+        assert_dn_exists(con, dn)
         if not argv.force:
             ezldap.ldif_print(query)
 
@@ -379,6 +395,11 @@ def class_info(argv):
             print(con.server.schema.object_classes[argv.objectClass[0]])
         except KeyError:
             print('objectClass "{}" not found.'.format(argv.objectClass[0]))
+
+
+def assert_dn_exists(con, dn):
+    if not con.exists(dn):
+        sys.exit('Operation failed: DN "{}" not found.'.format(dn))
 
 
 def op_summary(success, result):

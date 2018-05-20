@@ -164,6 +164,17 @@ class Connection(ldap3.Connection):
         return DataFrame(query)
 
 
+    def exists(self, dn):
+        '''
+        Returns true if a given DN exists in an LDAP directory.
+        '''
+        query = self.search_list(search_base=dn, search_scope=ldap3.BASE)
+        if len(query) == 1:
+            return True
+        else:
+            return False
+
+
     def next_uidn(self, search_filter='(objectClass=posixAccount)',
         search_base=None, uid_start=10000, uid_attribute='uidNumber'):
         """
@@ -235,11 +246,19 @@ class Connection(ldap3.Connection):
         return results
 
 
-    def modify_replace(self, dn, attrib, value):
+    def modify_replace(self, dn, attrib, value, replace_with=None):
         '''
         Change a single attribute on an object.
         '''
-        self.modify(dn, {attrib: [(ldap3.MODIFY_REPLACE, [value] )] })
+        if value is None:
+            raise ValueError('value cannot be None when performing a replace operation.')
+
+        if replace_with is None:
+            self.modify(dn, {attrib: [(ldap3.MODIFY_REPLACE, [value] )] })
+        else:
+            self.modify_delete(dn, attrib, value)
+            self.modify_add(dn, attrib, replace_with)
+
         return self.result
 
 
@@ -247,6 +266,9 @@ class Connection(ldap3.Connection):
         '''
         Add a single attribute to an object.
         '''
+        if value is None:
+            raise ValueError('value cannot be None when performing an add operation.')
+
         self.modify(dn, {attrib: [(ldap3.MODIFY_ADD, [value] )] })
         return self.result
 
@@ -256,7 +278,11 @@ class Connection(ldap3.Connection):
         Delete a single attribute from an object.
         If value is None, deletes all attributes of that name.
         '''
-        self.modify(dn, {attrib: [(ldap3.MODIFY_DELETE, [value] )] })
+        if value is None:
+            self.modify(dn, {attrib: [(ldap3.MODIFY_DELETE, [] )] })
+        else:
+            self.modify(dn, {attrib: [(ldap3.MODIFY_DELETE, [value] )] })
+
         return self.result
 
 

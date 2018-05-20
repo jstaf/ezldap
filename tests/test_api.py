@@ -104,6 +104,14 @@ def test_search_df(slapd):
     assert 'dcObject' in ezldapio['objectClass'].iloc[0]
 
 
+def test_exists(slapd):
+    '''
+    Can we properly detect if entities exist or not.
+    '''
+    assert slapd.exists('dc=ezldap,dc=io')
+    assert not slapd.exists('uid=ooga,ou=booga,dc=ezldap,dc=io')
+
+
 def test_add_group(slapd, config):
     '''
     Test adding a group.
@@ -195,6 +203,17 @@ def test_modify_delete(slapd, config):
     group = slapd.get_group('modify_delete')
     assert 'memberUid' not in group.keys()
 
+
+def test_modify_delete_all(slapd, config):
+    '''
+    Does modify_delete() delete entries properly?
+    '''
+    slapd.add_group('modify_delete', ldif_path=PREFIX+'add_group.ldif', conf=config)
+    # test delete from multiple attributes
+    slapd.modify_add('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'memberUid', 'added')
+    slapd.modify_delete('cn=modify_delete,ou=Group,dc=ezldap,dc=io', 'memberUid', None)
+    group = slapd.get_group('modify_delete')
+    assert 'memberUid' not in group.keys()
 
 def test_ldif_add(slapd):
     '''
