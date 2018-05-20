@@ -28,7 +28,7 @@ def guess_config():
     base = get_ldap_conf_val('BASE')
     conf = {
         'host': get_ldap_conf_val('URI'),
-        'binddn': get_current_dn(),
+        'binddn': None,
         'bindpw': None,
         'peopledn': 'ou=People,{}'.format(base),
         'groupdn': 'ou=Group,{}'.format(base),
@@ -66,19 +66,5 @@ def get_ldap_conf_val(field):
     try:
         ldap_conf = readlines_to_dict(open(path).readlines())
         return ldap_conf[field][0]
-    except KeyError:
-        return None
-
-
-def get_current_dn():
-    '''
-    Get the dn of the user you are currently as using ldapsearch.
-    '''
-    try:
-        proc = subprocess.Popen('ldapsearch -x uid=$(whoami)',
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        whoami = [line.decode() for line in proc.stdout.readlines()]
-        whoami_dict = readlines_to_dict(whoami)
-        return whoami_dict['dn:'][0]
     except KeyError:
         return None

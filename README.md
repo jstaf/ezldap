@@ -23,10 +23,10 @@ configuration values as possible and automates future connections to the
 directory server. Additionally, additions to an LDAP directory are performed
 using a set of configurable LDIF templates, making it very quick to
 customize the behavior of certain actions (like adding a group). Finally,
-for most tasks, a set of pre-made scripts are provided, for users who just
+for most tasks, a command-line interface is provided, for users who just
 want to get started doing stuff.
 
-**Example:**
+**Python example:**
 
 ```python
 import ezldap
@@ -36,11 +36,18 @@ with ezldap.auto_bind() as con:
     con.add_user('username', 'groupname', 'password')
 ```
 
+**Command-line example:**
+
+```bash
+# a password will be automatically generated
+ezldap add_user username groupname
+```
+
 ## installation
 
 You'll need a copy of Python 3.4+.
 No other dependencies are necessary,
-though `pandas` and the OpenLDAP clients are useful for some use cases.
+though `pandas` is useful for some use cases.
 
 ### centos 7:
 
@@ -58,13 +65,24 @@ sudo apt install python3 python3-pip python3-dev
 pip3 install --user git+https://github.com/jstaf/ezldap.git
 ```
 
-Configure your LDAP connection details with `ldap-config` before using the package.
+Configure your LDAP connection details with `ezldap config` before using the package.
 You do not need to run this script as root.
 The connection details/LDIF templates/etc. for `ezldap` are stored in `~/.ezldap`.
 Though you can store your bind password here for convenience,
 I do not recommend doing so, as it will be stored in cleartext.
 You may wish to configure the LDIF templates under `~/.ezldap`
 as well if you intend to use this package's add object functionality.
+
+## running tests
+
+To run the tests, run the following after installation.
+You will need to have [Docker](https://www.docker.com/community-edition) installed -
+it is used to spawn a test LDAP server to run tests against.
+
+```
+pip3 install pytest pytest-cov pytest-docker docker-compose
+pytest
+```
 
 ## using this package
 
@@ -73,13 +91,3 @@ Keep in mind this package is under active development and may not be appropriate
 Functionality is constantly being added, and the API should not yet be considered stable.
 
 For further documentation check out the [wiki](https://github.com/jstaf/ezldap/wiki)
-
-## running tests
-
-This package runs a lot of tests against a slapd docker image using `pytest`.
-You'll need [Docker](https://www.docker.com/community-edition),
-[Docker Compose](https://docs.docker.com/compose/install/),
-and and the `openldap-clients` packages as well
-(see `.travis.yml` for a full list of dependencies).
-
-Once all of that is installed, you can run the tests using `pytest`.

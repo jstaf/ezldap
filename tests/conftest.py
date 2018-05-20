@@ -10,14 +10,7 @@ import ezldap
 PREFIX = 'ezldap/templates/'
 
 def ping_slapd():
-    '''
-    Return true if we can contact slapd.
-    '''
-    try:
-        stdout = subprocess.check_output('ldapsearch -x -b dc=ezldap,dc=io', shell=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
+    return ezldap.ping('ldap://localhost')
 
 
 @pytest.fixture(scope='session')

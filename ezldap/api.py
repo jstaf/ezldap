@@ -8,10 +8,24 @@ import re
 import copy
 
 import ldap3
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPSessionTerminatedByServerError
 
 from .ldif import ldif_read
 from .password import ssha_passwd
 from .config import config
+
+
+def ping(uri):
+    '''
+    Returns true if an LDAP server is responding at a given URI by attempting
+    an anonymous bind.
+    '''
+    try:
+        Connection(uri)
+        return True
+    except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError):
+        return False
+
 
 def auto_bind(conf=None):
     '''
