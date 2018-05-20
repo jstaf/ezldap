@@ -161,9 +161,8 @@ def main():
         help="Check a user's password.",
         description='Verify that an LDAP password is correct. '
         'Currently only works with SSHA-encrypted passwords.')
-    check_pw_parser.add_argument('username', nargs='?', type=str,
-        help='If a username is supplied, this will check that user\'s password. '
-        'You will otherwise be prompted for the password hash.')
+    check_pw_parser.add_argument('username', nargs=1, type=str,
+        help='Username to check password for')
     check_pw_parser.set_defaults(func=check_pw)
 
     server_info_desc = 'Print information about the LDAP server you are using.'
@@ -316,35 +315,32 @@ def change_shell(argv):
 def change_pw(argv):
     user = argv.username[0]
     if argv.specify_password:
-        print('Specify new password for {}...'.format(user))
-        passwd = getpass.getpass()
+        passwd = getpass.getpass('New password for {}: '.format(user))
+        confirm = getpass.getpass('Confirm password: '.format(user))
+        if passwd != confirm:
+            sys.exit('Operation aborted: Passwords do not match.')
     else:
         passwd = ezldap.random_passwd()
-        print('New password for {} - {}'.format(user, passwd))
-
-    ssha = ezldap.ssha_passwd(passwd)
 
     with ezldap.auto_bind() as con:
         try:
             dn = con.get_user(user)['dn'][0]
         except IndexError:
-            sys.exit('User "{}" does not exist.'.format(user))
+            sys.exit('Operation aborted: User "{}" does not exist.'.format(user))
 
+        ssha = ezldap.ssha_passwd(passwd)
         res = con.modify_replace(dn, 'userPassword', ssha)
         op_summary(res['result'] == 0, res)
+        print('New password for {}: {}'.format(user, passwd))
 
 
 def check_pw(argv):
-    if argv.username is None:
-        print('Enter SSHA password hash...')
-        ssha = getpass.getpass()
-    else:
-        with ezldap.auto_bind() as con:
-            query = con.get_user(argv.username)
-            if len(query) != 1:
-                sys.exit('User not found.')
+    with ezldap.auto_bind() as con:
+        query = con.get_user(argv.username)
+        if len(query) != 1:
+            sys.exit('User not found.')
 
-            ssha = ezldap.get_attrib_list(query, 'userPassword')[0]
+        ssha = ezldap.get_attrib_list(query, 'userPassword')[0]
 
     print('\nEnter password to verify...')
     passwd = getpass.getpass()

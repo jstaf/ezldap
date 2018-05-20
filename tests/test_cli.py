@@ -134,7 +134,7 @@ def test_change_pw(slapd):
     username = 'cli_change_pw'
     add_testuser(username)
     stdout = cli('change_pw {}'.format(username))
-    pw = re.findall(r'- (\w+)', stdout.strip())[0]
+    pw = re.findall(r': (\w+)', stdout.strip())[0]
     user = slapd.get_user(username)
     assert ezldap.ssha_check(user['userPassword'][0], pw)
 
