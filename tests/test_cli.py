@@ -142,19 +142,32 @@ def test_delete(slapd):
     assert slapd.get_group('deleteme') is None
 
 
-@pytest.mark.skip
 def test_modify_add(slapd):
-    pass
+    user = 'modadd'
+    add_testuser(user)
+    cli('modify cn={},ou=People,dc=ezldap,dc=io add mail test@test.com'.format(user))
+    testme = slapd.get_user(user)
+    assert 'test@test.com' in testme['mail']
 
 
-@pytest.mark.skip
 def test_modify_replace(slapd):
-    pass
+    user = 'modreplace'
+    add_testuser(user)
+    cli('modify cn={},ou=People,dc=ezldap,dc=io replace shadowWarning 7 31'.format(user))
+    testme = slapd.get_user(user)
+    assert '31' == testme['shadowWarning'][0]
 
 
-@pytest.mark.skip
 def test_modify_delete(slapd):
-    pass
+    user = 'moddelete'
+    add_testuser(user)
+    # delete all syntax
+    cli('modify cn={},ou=People,dc=ezldap,dc=io delete shadowWarning -'.format(user))
+    # delete named value syntax
+    cli('modify cn={},ou=People,dc=ezldap,dc=io delete gecos {}'.format(user, user))
+    testme = slapd.get_user(user)
+    assert 'shadowWarning' not in testme.keys()
+    assert 'gecos' not in testme.keys()
 
 
 @pytest.mark.skip

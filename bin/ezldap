@@ -211,7 +211,13 @@ def add_user(argv):
 
 
 def modify(argv):
-    pass
+    op = argv.operation[0]
+    if op == 'add':
+        print('add')
+    elif op == 'replace':
+        print('replace')
+    elif op == 'delete':
+        print('delete')
 
 
 def delete(argv):
@@ -220,7 +226,7 @@ def delete(argv):
         #TODO add recursive delete
         query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
         if len(query) != 1:
-            sys.exit('Operation failed: DN "{}" not found.'.format(dn))            
+            sys.exit('Operation failed: DN "{}" not found.'.format(dn))
 
         if not argv.force:
             ezldap.ldif_print(query)
