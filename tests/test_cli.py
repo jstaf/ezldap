@@ -132,9 +132,14 @@ def test_check_pw(slapd):
     pass
 
 
-@pytest.mark.skip
 def test_delete(slapd):
-    pass
+    groupname = 'deleteme'
+    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+    group = slapd.get_group(groupname)
+    assert group is not None
+    groupdn = group['dn'][0]
+    cli('delete -f {}'.format(groupdn))
+    assert slapd.get_group('deleteme') is None
 
 
 @pytest.mark.skip
