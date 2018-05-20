@@ -9,11 +9,10 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
-  - 'pypy3'
 
 install:
   - pip install .
-  - pip install pytest-docker pytest-cov docker-compose coveralls
+  - pip install pytest-docker pytest-cov docker-compose coveralls pandas
 
 script: pytest
 
