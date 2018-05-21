@@ -384,3 +384,17 @@ class Connection(ldap3.Connection):
 
         ldif = ldif_read(ldif_path, replace)
         return self.ldif_add(ldif)
+
+    def add_host(self, hostname, ip_address, conf=None,
+        ldif_path='~/.ezldap/add_host.ldif', **kwargs):
+        replace = {'hostname': hostname,
+                   'ip': ip_address,
+                   'baseaddr': '.'.join(self.base_dn().split(','))}
+
+        if conf is None:
+            conf = config()
+
+        replace.update(conf)
+        replace.update(kwargs)
+        ldif = ldif_read(ldif_path, replace)
+        return self.ldif_add(ldif)

@@ -31,6 +31,7 @@ def guess_config():
         'bindpw': None,
         'peopledn': 'ou=People,{}'.format(base),
         'groupdn': 'ou=Group,{}'.format(base),
+        'hostsdn': 'ou=Hosts,{}'.format(base),
         'homedir': '/home'
     }
     return conf

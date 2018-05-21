@@ -1,0 +1,7 @@
+dn: cn=$hostname,$hostsdn
+objectClass: top
+objectClass: device
+objectClass: ipHost
+cn: $hostname
+cn: $hostname.$baseaddr
+ipHostNumber: $ip

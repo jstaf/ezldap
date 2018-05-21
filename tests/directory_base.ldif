@@ -16,3 +16,7 @@ ou: Group
 dn: ou=People,dc=ezldap,dc=io
 objectClass: organizationalUnit
 ou: People
+
+dn: ou=Hosts,dc=ezldap,dc=io
+objectClass: organizationalUnit
+ou: Hosts
