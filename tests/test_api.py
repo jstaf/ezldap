@@ -197,12 +197,12 @@ def test_add_host_fq(slapd, config):
     '''
     Test adding a host to a directory with short hostname.
     '''
-    slapd.add_host('host_short.ezldap.io', '1.2.3.123',
+    slapd.add_host('host_fq', '1.2.3.124', hostname_fq='host_fq.test.com',
         ldif_path=PREFIX+'add_host.ldif', conf=config)
-    host = slapd.get_host('host_short')
-    assert 'host_short.ezldap.io' in host['cn']
-    assert 'host_short' in host['cn']
-    assert '1.2.3.123' in host['ipHostNumber']
+    host = slapd.get_host('host_fq')
+    assert 'host_fq.test.com' in host['cn']
+    assert 'host_fq' in host['cn']
+    assert '1.2.3.124' in host['ipHostNumber']
 
 
 def test_add_host_invalid_ip(slapd, config):

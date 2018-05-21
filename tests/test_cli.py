@@ -114,6 +114,24 @@ def test_add_to_group(slapd):
     assert username in group['memberUid']
 
 
+def test_add_host_short(slapd):
+    hostname = 'host_cli'
+    cli('add_host --ldif {}/add_host.ldif {} {}'.format(PREFIX, hostname, '244.1.2.3'))
+    host = slapd.get_host(hostname)
+    assert 'host_cli' in host['cn']
+    assert 'host_cli.ezldap.io' in host['cn']
+    assert '244.1.2.3' in host['ipHostNumber']
+
+
+def test_add_host_fq(slapd):
+    hostname = 'host_cli_fq.ezldap.io'
+    cli('add_host --ldif {}/add_host.ldif {} {}'.format(PREFIX, hostname, '244.1.2.4'))
+    host = slapd.get_host(hostname)
+    assert 'host_cli_fq' in host['cn']
+    assert 'host_cli_fq.ezldap.io' in host['cn']
+    assert '244.1.2.4' in host['ipHostNumber']
+
+
 def test_change_home(slapd):
     username = 'cli_change_home'
     add_testuser(username)
