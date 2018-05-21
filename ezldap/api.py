@@ -9,7 +9,8 @@ import re
 import sys
 
 import ldap3
-from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, LDAPSessionTerminatedByServerError
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, \
+    LDAPSessionTerminatedByServerError, LDAPSocketReceiveError
 
 from .ldif import ldif_read
 from .password import ssha_passwd
@@ -25,7 +26,8 @@ def ping(uri):
         con = Connection(uri)
         con.unbind()
         return True
-    except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError):
+    except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError,
+        LDAPSocketReceiveError):
         return False
 
 
