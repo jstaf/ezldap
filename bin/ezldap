@@ -378,19 +378,19 @@ def change_pw(argv):
 
 def check_pw(argv):
     with ezldap.auto_bind() as con:
-        query = con.get_user(argv.username)
-        if len(query) != 1:
+        query = con.get_user(argv.username[0])
+        if query is None:
             sys.exit('User not found.')
 
-        ssha = ezldap.get_attrib_list(query, 'userPassword')[0]
+        ssha = query['userPassword'][0]
 
-    print('\nEnter password to verify...')
+    print('Enter password to verify...')
     passwd = getpass.getpass()
 
     if ezldap.ssha_check(ssha, passwd):
-        print('\nPasswords match!')
+        print('Success... passwords match!')
     else:
-        print("\nPasswords do not match. :'(")
+        print("Failed... passwords do not match.")
 
 
 def config(argv):
