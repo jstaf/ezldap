@@ -36,7 +36,7 @@ def add_testuser(username):
 
 
 def add_testgroup(groupname):
-    cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
+    return cli('add_group --ldif {}/add_group.ldif {}'.format(PREFIX, groupname))
 
 
 def test_parser_syntax():
