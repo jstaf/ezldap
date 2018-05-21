@@ -139,11 +139,6 @@ def test_change_pw(slapd):
     assert ezldap.ssha_check(user['userPassword'][0], pw)
 
 
-@pytest.mark.skip
-def test_check_pw(slapd):
-    pass
-
-
 def test_delete(slapd):
     groupname = 'deleteme'
     add_testgroup(groupname)

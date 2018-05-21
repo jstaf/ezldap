@@ -24,7 +24,7 @@ def test_starttls(slapd):
 
 def test_636(slapd):
     ssl = ezldap.Connection('ldaps://localhost')
-    assert slapd.server.ssl
+    assert ssl.server.ssl
 
 
 def test_bind_success(slapd):

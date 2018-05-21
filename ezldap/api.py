@@ -6,7 +6,6 @@ import sys
 import getpass
 import copy
 import re
-import sys
 
 import ldap3
 from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, \
