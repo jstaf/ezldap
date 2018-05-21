@@ -3,5 +3,5 @@ objectClass: top
 objectClass: device
 objectClass: ipHost
 cn: $hostname
-cn: $hostname.$baseaddr
+cn: $hostname_fq
 ipHostNumber: $ip

@@ -13,6 +13,12 @@ def test_ping(slapd, config):
     assert not ezldap.ping('ldap://localhost:1234')
 
 
+def test_dn_address():
+    assert ezldap.dn_address('dc=ezldap,dc=io') == 'ezldap.io'
+    assert ezldap.dn_address('ou=Hosts,dc=ezldap,dc=io') == 'hosts.ezldap.io'
+    assert ezldap.dn_address('cn=spaces in,ou=Hosts,dc=ezldap,dc=io') == 'spaces-in.hosts.ezldap.io'
+
+
 def test_triple_slash_uri(slapd):
     assert ezldap.ping('ldap:///')
 
@@ -40,7 +46,7 @@ def test_anon_bind(anon):
     '''
     assert anon.who_am_i() is None
     assert anon.base_dn() == 'dc=ezldap,dc=io'
-    assert len(anon.search_list('(objectClass=organizationalUnit)')) == 2
+    assert len(anon.search_list('(objectClass=organizationalUnit)')) == 3
     assert len(anon.search_list('(objectClass=applicationProcess)')) == 0
 
 
@@ -55,7 +61,7 @@ def test_search_list(slapd):
     '''
     Does search_list() return the correct number of entries?
     '''
-    assert len(slapd.search_list('(objectClass=organizationalUnit)')) == 2
+    assert len(slapd.search_list('(objectClass=organizationalUnit)')) == 3
     assert len(slapd.search_list('(objectClass=applicationProcess)')) == 0
 
 
@@ -75,7 +81,7 @@ def test_search_list_t(slapd):
     Does search_list_t() return data properly?
     '''
     query = slapd.search_list_t('(objectClass=organizationalUnit)')
-    assert set(query['ou']) == {'Group', 'People'}
+    assert set(query['ou']) == {'Group', 'People', 'Hosts'}
     fail = slapd.search_list_t('(objectClass=applicationProcess)')
     assert set(fail['dn']) == set()
 
@@ -173,6 +179,40 @@ def test_add_to_group(slapd, config):
     slapd.add_to_group('user1234', 'group_for_user',
                        ldif_path=PREFIX+'add_to_group.ldif', conf=config)
     assert 'user1234' in slapd.get_group('group_for_user')['memberUid']
+
+
+def test_add_host_short(slapd, config):
+    '''
+    Test adding a host to a directory with short hostname.
+    '''
+    slapd.add_host('host_short', '1.2.3.123',
+        ldif_path=PREFIX+'add_host.ldif', conf=config)
+    host = slapd.get_host('host_short')
+    assert 'host_short.ezldap.io' in host['cn']
+    assert 'host_short' in host['cn']
+    assert '1.2.3.123' in host['ipHostNumber']
+
+
+def test_add_host_fq(slapd, config):
+    '''
+    Test adding a host to a directory with short hostname.
+    '''
+    slapd.add_host('host_short.ezldap.io', '1.2.3.123',
+        ldif_path=PREFIX+'add_host.ldif', conf=config)
+    host = slapd.get_host('host_short')
+    assert 'host_short.ezldap.io' in host['cn']
+    assert 'host_short' in host['cn']
+    assert '1.2.3.123' in host['ipHostNumber']
+
+
+def test_add_host_invalid_ip(slapd, config):
+    '''
+    Test adding a host to a directory with short hostname.
+    '''
+    with pytest.raises(ValueError) as error:
+        slapd.add_host('host_short2', '1.2.1.12312355',
+            ldif_path=PREFIX+'add_host.ldif', conf=config)
+        assert 'does not appear to be an IPv4' in error.value
 
 
 def test_modify_add(slapd, config):

@@ -5,6 +5,7 @@ import sys
 import argparse
 import getpass
 import pkg_resources
+import re
 
 import ldap3
 import yaml
@@ -94,6 +95,22 @@ def main():
         default=['~/.ezldap/add_to_group.ldif'],
         help='Path of LDIF template to use when performing this operation.')
     add_to_group_parser.set_defaults(func=add_to_group)
+
+    add_host_desc = 'Add a host.'
+    add_host_parser = subparsers.add_parser('add_host',
+        help=add_host_desc, description=add_host_desc)
+    add_host_parser.add_argument('hostname', nargs=1, type=str,
+        help='Hostname of machine to add. Can be either the fully-qualified '
+        'or short hostname. If the short hostname (hostname -s) is used, '
+        'a fully-qualified alias will be created based on this directory\'s '
+        'suffix ("host1" would become "host1.ezldap.io", for a naming context '
+        'of dc=ezldap,dc=io).')
+    add_host_parser.add_argument('ip_address', nargs=1, type=str,
+        help='IP address of machine to add.')
+    add_host_parser.add_argument('--ldif', nargs=1, type=str,
+        default=['~/.ezldap/add_host.ldif'],
+        help='Path of LDIF template to use when performing this operation.')
+    add_host_parser.set_defaults(func=add_host)
 
     modify_desc = 'Add, replace, or delete an attribute from an entity.'
     modify_parser = subparsers.add_parser('modify',
@@ -214,8 +231,25 @@ def add_user(argv):
         print('Creating user {}, member of LDAP group {}...'.format(user, group))
         con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
         con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
-        print('Password: {}'.format(user, passwd))
+        print('Password: {}'.format(passwd))
         print('Success!')
+
+
+def add_host(argv):
+    hostname = argv.hostname[0]
+    with ezldap.auto_bind() as con:
+        if '.' not in hostname:
+            # we're working with the short hostname
+            short_name = hostname
+            fq_name = ezldap.dn_address(con.base_dn())
+        else:
+            # we're working with the fully qualified hostname
+            short_name = re.findall(r'^[^.]+', hostname)[0]
+            fq_name = hostname
+
+        res = con.add_host(short_name, argv.ip_address[0], hostname_fq=fq_name,
+            ldif_path=argv.ldif[0])
+        op_summary(res['result'] == 0, res)
 
 
 def modify(argv):
@@ -364,6 +398,7 @@ def config(argv):
         'bindpw': 'Bind password (leave blank to prompt for password)',
         'peopledn': 'User base dn',
         'groupdn': 'Group base dn',
+        'hostdn': 'Host base dn',
         'homedir': 'Default home directory for new users'
     }
 

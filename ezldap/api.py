@@ -6,6 +6,7 @@ import sys
 import getpass
 import copy
 import re
+import ipaddress
 
 import ldap3
 from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, \
@@ -56,6 +57,19 @@ def auto_bind(conf=None):
         conf['bindpw'] = getpass.getpass('Enter bind DN password...')
 
     return Connection(conf['host'], user=conf['binddn'], password=conf['bindpw'])
+
+
+def dn_address(dn):
+    '''
+    Get the "."-delmited address for a DN (typically a directory naming context/
+    base dn). If the directory naming context was dc=ezldap,dc=io, then the
+    address would be "ezldap.io". Typically used when generating fully-qualified
+    hostnames for new hosts (for instance, "hostname.ezldap.io"). However,
+    this function will create addresses for any DN, if so desired.
+    '''
+    dn = re.sub(r'\s', '-', dn.lower().strip())
+    contents = re.findall(r'=([^=,]+)', dn)
+    return '.'.join(contents)
 
 
 class Connection(ldap3.Connection):
@@ -255,6 +269,13 @@ class Connection(ldap3.Connection):
         return self.get_user(group, basedn=basedn, index=index)
 
 
+    def get_host(self, host, basedn=None, index='cn'):
+        '''
+        Return a given host. Searches entire directory if no base search dn given.
+        '''
+        return self.get_user(host, basedn=basedn, index=index)
+
+
     def ldif_add(self, ldif):
         """
         Perform an add operation using an LDIF object.
@@ -385,11 +406,18 @@ class Connection(ldap3.Connection):
         ldif = ldif_read(ldif_path, replace)
         return self.ldif_add(ldif)
 
+
     def add_host(self, hostname, ip_address, conf=None,
         ldif_path='~/.ezldap/add_host.ldif', **kwargs):
+        '''
+        Add a host to a directory. Hostname is the short hostname (hostname -s),
+        to add. If specifying the fully qualified hostname is desired
+        (or the fully qualified hostname does not match the directory suffix),
+        specify the fully-qualified hostname as "hostname_fq".
+        '''
         replace = {'hostname': hostname,
-                   'ip': ip_address,
-                   'baseaddr': '.'.join(self.base_dn().split(','))}
+                   'ip': str(ipaddress.ip_address(ip_address)),
+                   'hostname_fq': hostname + '.' + dn_address(self.base_dn())}
 
         if conf is None:
             conf = config()
