@@ -28,7 +28,7 @@ def cli(call):
 
 
 def add_testuser(username):
-    cli('add_user '
+    return cli('add_user '
         '--ldif-user {}/add_user.ldif '
         '--ldif-group {}/add_group.ldif '
         '--ldif-add-to-group {}/add_to_group.ldif '
@@ -102,6 +102,13 @@ def test_add_user_wgroup(slapd):
     assert username in group['memberUid']
     user = slapd.get_user(username)
     assert user['uid'][0] == username
+
+
+def test_add_user_pw_matches(slapd):
+    stdout = add_testuser('pw_should_work')
+    pw = re.findall(r'Password: (\S+)', stdout)[0]
+    ssha = slapd.get_user('pw_should_work')['userPassword'][0]
+    assert ezldap.ssha_check(ssha, pw)
 
 
 def test_add_to_group(slapd):

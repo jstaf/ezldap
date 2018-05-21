@@ -224,17 +224,20 @@ def add_user(argv):
             # the user, then create it.
             group = user
             if con.get_group(group) is None:
-                print('Creating LDAP group {}...'.format(group))
-                con.add_group(group, ldif_path=argv.ldif_group[0])
+                print('Creating LDAP group {}...'.format(group), end='')
+                res = con.add_group(group, ldif_path=argv.ldif_group[0])
+                op_summary(res[0]['result'] == 0, res[0])
         elif con.get_group(group) is None:
             sys.exit('Group does not exist.')
 
         passwd = ezldap.random_passwd()
-        print('Creating user {}, member of LDAP group {}...'.format(user, group))
-        con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
-        con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
+        print('Creating user {}...'.format(user), end='')
+        res = con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
+        op_summary(res[0]['result'] == 0, res[0])
+        print('Adding {} to LDAP group {}...'.format(user, group), end='')
+        res = con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
+        op_summary(res[0]['result'] == 0, res[0])
         print('Password: {}'.format(passwd))
-        print('Success!')
 
 
 def add_host(argv):
