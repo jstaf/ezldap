@@ -40,7 +40,8 @@ def supports_starttls(uri):
         con = ldap3.Connection(uri, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
         con.unbind()
         return True
-    except (LDAPStartTLSError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError):
+    except (LDAPStartTLSError, LDAPSocketOpenError,
+        LDAPSocketReceiveError, LDAPSessionTerminatedByServerError):
         return False
 
 
