@@ -13,6 +13,20 @@ def test_ping(slapd, config):
     assert not ezldap.ping('ldap://localhost:1234')
 
 
+def test_triple_slash_uri(slapd):
+    assert ezldap.ping('ldap:///')
+
+
+def test_starttls(slapd):
+    assert slapd.tls_started
+    assert not slapd.server.ssl
+
+
+def test_636(slapd):
+    ssl = ezldap.Connection('ldaps://localhost')
+    assert slapd.server.ssl
+
+
 def test_bind_success(slapd):
     '''
     If this fails, the bind has failed.

@@ -5,9 +5,11 @@ Bind to an LDAP directory and perform various operations.
 import sys
 import getpass
 import copy
+import re
+import sys
 
 import ldap3
-from ldap3.core.exceptions import LDAPSocketOpenError, LDAPSessionTerminatedByServerError
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, LDAPSessionTerminatedByServerError
 
 from .ldif import ldif_read
 from .password import ssha_passwd
@@ -20,9 +22,24 @@ def ping(uri):
     an anonymous bind.
     '''
     try:
-        Connection(uri)
+        con = Connection(uri)
+        con.unbind()
         return True
     except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError):
+        return False
+
+
+def supports_starttls(uri):
+    '''
+    Determine if the server actually supports StartTLS (both the server software
+    itself supports it, and the server instance itself has been configured with
+    SSL support).
+    '''
+    try:
+        con = ldap3.Connection(uri, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
+        con.unbind()
+        return True
+    except (LDAPStartTLSError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError):
         return False
 
 
@@ -34,8 +51,7 @@ def auto_bind(conf=None):
         conf = config()
 
     if conf['binddn'] is not None and conf['bindpw'] is None:
-        print('Enter bind DN password...', file=sys.stderr)
-        conf['bindpw'] = getpass.getpass()
+        conf['bindpw'] = getpass.getpass('Enter bind DN password...')
 
     return Connection(conf['host'], user=conf['binddn'], password=conf['bindpw'])
 
@@ -46,20 +62,28 @@ class Connection(ldap3.Connection):
     Used to make pyldap's LDAPObject even easier to use.
     To automatically create a binding use auto_bind() instead.
     '''
-
     def __init__(self, host, user=None, password=None, authentication=ldap3.SIMPLE):
         if host is None:
-            host = 'ldap://localhost'
+            raise ValueError('LDAP host cannot be None.')
+
+        # for whatever reason, ldap3 can't deal with ldap:/// identifiers
+        host = re.sub(r'///', '//localhost', host)
 
         self.server = ldap3.Server(host, get_info=ldap3.ALL)
+        if supports_starttls(host):
+            auto_bind_mode = ldap3.AUTO_BIND_TLS_BEFORE_BIND
+        else:
+            print('Warning, server does not appear to support SSL/StartTLS, '
+                'proceeding without...', file=sys.stderr)
+            auto_bind_mode = ldap3.AUTO_BIND_NO_TLS
+
         if user is None:
             # anonymous bind
-            super().__init__(self.server)
+            super().__init__(self.server, auto_bind=auto_bind_mode)
         else:
-            super().__init__(self.server, user=user, password=password, authentication=authentication)
-        # TODO negotiate TLS before binding in all cases,
-        # only cleartext in case of user override
-        self.bind()
+            super().__init__(self.server,
+                user=user, password=password, authentication=authentication,
+                auto_bind=auto_bind_mode)
 
 
     def __enter__(self):
