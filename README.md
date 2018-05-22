@@ -31,7 +31,6 @@ want to get started doing stuff.
 ```python
 import ezldap
 
-# ezldap.auto_bind() uses connection details from the "ldap-config" script
 with ezldap.auto_bind() as con:
     con.add_user('username', 'groupname', 'password')
 ```
