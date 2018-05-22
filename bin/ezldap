@@ -8,6 +8,7 @@ import pkg_resources
 import re
 
 import ldap3
+from ldap3.core.exceptions import LDAPSocketOpenError
 import yaml
 import ezldap
 
@@ -195,7 +196,10 @@ def main():
     class_info_parser.set_defaults(func=class_info)
 
     argv = parser.parse_args()
-    argv.func(argv)
+    try:
+        argv.func(argv)
+    except LDAPSocketOpenError:
+        sys.exit('Could not reach LDAP server at {}'.format(ezldap.config()['host']))
 
 
 def add_group(argv):
@@ -405,7 +409,7 @@ def config(argv):
         'bindpw': 'Bind password (leave blank to prompt for password)',
         'peopledn': 'User base dn',
         'groupdn': 'Group base dn',
-        'hostdn': 'Host base dn',
+        'hostsdn': 'Host base dn',
         'homedir': 'Default home directory for new users'
     }
 
