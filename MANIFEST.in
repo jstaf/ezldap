@@ -1,1 +1,2 @@
-include ezldap/templates/
+recursive-include ezldap/templates/ *.ldif
+

@@ -15,7 +15,7 @@ setup(
     author_email='jeff.stafford@queensu.ca',
     license='BSD3',
     packages=['ezldap'],
-    scripts=glob.glob('bin/*'),
+    scripts=['bin/ezldap'],
     include_package_data=True,
     install_requires=[
         'PyYAML',
