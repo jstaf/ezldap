@@ -23,9 +23,8 @@ def ping(uri):
     an anonymous bind.
     '''
     try:
-        con = Connection(uri)
-        con.unbind()
-        return True
+        with Connection(uri):
+            return True
     except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError,
         LDAPSocketReceiveError):
         return False
@@ -38,6 +37,7 @@ def supports_starttls(uri):
     SSL support).
     '''
     try:
+        uri = clean_uri(uri)
         con = ldap3.Connection(uri, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
         con.unbind()
         return True
@@ -71,6 +71,14 @@ def dn_address(dn):
     return '.'.join(contents)
 
 
+def clean_uri(uri):
+    '''
+    ldap3 really struggles with URIs ending in a slash.
+    '''
+    uri = re.sub(r'///', '//localhost', uri)
+    return re.sub(r'/$', '', uri)
+
+
 class Connection(ldap3.Connection):
     '''
     An object-oriented wrapper around an LDAP connection.
@@ -82,7 +90,7 @@ class Connection(ldap3.Connection):
             raise ValueError('LDAP host cannot be None.')
 
         # for whatever reason, ldap3 can't deal with ldap:/// identifiers
-        host = re.sub(r'///', '//localhost', host)
+        host = clean_uri(host)
 
         self.server = ldap3.Server(host, get_info=ldap3.ALL)
         if supports_starttls(host):
