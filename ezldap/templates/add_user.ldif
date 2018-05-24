@@ -3,6 +3,7 @@ objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
 objectClass: inetOrgPerson
+uid: $username
 cn: $username
 sn: $username
 userPassword: $user_password
