@@ -10,17 +10,27 @@ from string import Template
 
 import ldap3
 
+
+def template(path, replacements=None):
+    '''
+    Read a file and substitute replacment entries for placeholders designated
+    by $placeholder_name. If replacements is None, it simply opens and reads a
+    file into a string.
+    '''
+    if replacements is None:
+        return open(path).read()
+    else:
+        content = Template(open(path).read())
+        return content.substitute(replacements)
+
+
 def ldif_read(path, replacements=None):
     '''
     Read an LDIF file into a list of dicts appropriate for use with ezldap.
     '''
     # read into a string buffer first
     path = os.path.expanduser(path)
-    if replacements is None:
-        content = open(path)
-    else:
-        template = Template(open(path).read())
-        content = StringIO(template.substitute(replacements))
+    content = StringIO(template(path, replacements))
 
     operations = {
         'add': ldap3.MODIFY_ADD,
