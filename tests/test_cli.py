@@ -5,6 +5,7 @@ Test the ezldap CLI and ensure it works properly.
 import re
 import subprocess
 import ezldap
+import pytest
 
 PREFIX = 'ezldap/templates/'
 
@@ -245,5 +246,14 @@ def test_server_info(slapd):
 def test_class_info(slapd):
     stdout = cli('class_info inetOrgPerson')
     assert 'Internet Organizational Person' in stdout
-    stdout = cli('class_info asdf')
-    assert 'not found' in stdout
+    with pytest.raises(subprocess.SubprocessError) as err:
+        stdout = cli('class_info asdf')
+        assert 'not found' in err.value
+
+
+def test_assert_dn_exists(slapd):
+    with pytest.raises(subprocess.SubprocessError) as err:
+        cli('delete sldkjafldfjka')
+        assert 'not found' in err.value
+        cli('delete cn=asdfjaksfsjdflkj')
+        assert 'not found' in err.value

@@ -15,6 +15,7 @@ from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError, \
 from .ldif import ldif_read
 from .password import ssha_passwd
 from .config import config
+from .terminal import fmt
 
 
 def ping(uri):
@@ -112,8 +113,8 @@ class Connection(ldap3.Connection):
         if supports_starttls(host):
             auto_bind_mode = ldap3.AUTO_BIND_TLS_BEFORE_BIND
         else:
-            print('Warning, server does not appear to support SSL/StartTLS, '
-                'proceeding without...', file=sys.stderr)
+            print(fmt('Warning: server does not appear to support SSL/StartTLS, '
+                'proceeding without...', color='yellow'), file=sys.stderr)
             auto_bind_mode = ldap3.AUTO_BIND_NO_TLS
 
         if user is None or password is None:

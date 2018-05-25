@@ -8,9 +8,11 @@ import pkg_resources
 import re
 
 import ldap3
-from ldap3.core.exceptions import LDAPSocketOpenError
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPInvalidDnError, LDAPBindError
 import yaml
 import ezldap
+from ezldap.terminal import fmt
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -199,7 +201,9 @@ def main():
     try:
         argv.func(argv)
     except LDAPSocketOpenError:
-        sys.exit('Could not reach LDAP server at {}'.format(ezldap.config()['host']))
+        fail('Could not reach LDAP server at {}'.format(ezldap.config()['host']))
+    except LDAPBindError:
+        fail('Bind failed: invalid credentials.')
 
 
 def add_group(argv):
@@ -228,18 +232,18 @@ def add_user(argv):
             # the user, then create it.
             group = user
             if con.get_group(group) is None:
-                print('Creating LDAP group {}...'.format(group), end='')
+                print('Creating LDAP group {}... '.format(group), end='')
                 res = con.add_group(group, ldif_path=argv.ldif_group[0])
                 op_summary(res[0]['result'] == 0, res[0])
         elif con.get_group(group) is None:
-            sys.exit('Group does not exist.')
+            fail('Group does not exist.')
 
-        print('Creating user {}...'.format(user), end='')
+        print('Creating user {}... '.format(user), end='')
         passwd = ezldap.random_passwd()
         res = con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
         op_summary_ldif_add(res)
 
-        print('Adding {} to LDAP group {}...'.format(user, group), end='')
+        print('Adding {} to LDAP group {}... '.format(user, group), end='')
         res = con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
         op_summary_ldif_add(res)
 
@@ -283,7 +287,7 @@ def modify(argv):
             res = con.modify_delete(dn, attrib, value)
         else:
             # should never get here, just being safe.
-            sys.exit('Unrecognized command.')
+            fail('Unrecognized command.')
 
         op_summary_ezldap(res)
 
@@ -301,7 +305,7 @@ def modify_dn(argv):
     relative_new, superior_new = separate_dn(new_dn)
 
     if dn == new_dn:
-        sys.exit('Operation failed: DNs are the same.')
+        fail('DNs are the same.')
 
     with ezldap.auto_bind() as con:
         assert_dn_exists(con, dn)
@@ -341,7 +345,7 @@ def change_home(argv):
         try:
             dn = con.get_user(argv.username[0])['dn'][0]
         except TypeError:
-            sys.exit('User "{}" not found.'.format(argv.username[0]))
+            fail('User "{}" not found.'.format(argv.username[0]))
 
         res = con.modify_replace(dn, 'homeDirectory', argv.homedir[0])
         op_summary_ezldap(res)
@@ -352,7 +356,7 @@ def change_shell(argv):
         try:
             dn = con.get_user(argv.username[0])['dn'][0]
         except TypeError:
-            sys.exit('User "{}" not found.'.format(argv.username[0]))
+            fail('User "{}" not found.'.format(argv.username[0]))
 
         res = con.modify_replace(dn, 'loginShell', argv.shell[0])
         op_summary_ezldap(res)
@@ -364,27 +368,28 @@ def change_pw(argv):
         passwd = getpass.getpass('New password for {}: '.format(user))
         confirm = getpass.getpass('Confirm password: '.format(user))
         if passwd != confirm:
-            sys.exit('Operation aborted: Passwords do not match.')
+            fail('Passwords do not match.')
     else:
         passwd = ezldap.random_passwd()
 
     with ezldap.auto_bind() as con:
         try:
             dn = con.get_user(user)['dn'][0]
-        except IndexError:
-            sys.exit('Operation aborted: User "{}" does not exist.'.format(user))
+        except TypeError:
+            fail('User "{}" does not exist.'.format(user))
 
         ssha = ezldap.ssha_passwd(passwd)
         res = con.modify_replace(dn, 'userPassword', ssha)
         op_summary_ezldap(res)
-        print('New password for {}: {}'.format(user, passwd))
+        if not argv.specify_password:
+            print('New password for {}: {}'.format(user, passwd))
 
 
 def check_pw(argv):
     with ezldap.auto_bind() as con:
         query = con.get_user(argv.username[0])
         if query is None:
-            sys.exit('User not found.')
+            fail('User not found.')
 
         ssha = query['userPassword'][0]
 
@@ -392,9 +397,9 @@ def check_pw(argv):
     passwd = getpass.getpass()
 
     if ezldap.ssha_check(ssha, passwd):
-        print('Success... passwords match!')
+        print(fmt('Passwords match!', 'green'))
     else:
-        print("Failed... passwords do not match.")
+        fail("Passwords do not match.")
 
 
 def config(argv):
@@ -473,12 +478,35 @@ def class_info(argv):
         try:
             print(con.server.schema.object_classes[argv.objectClass[0]])
         except KeyError:
-            print('objectClass "{}" not found.'.format(argv.objectClass[0]))
+            fail('objectClass "{}" not found.'.format(argv.objectClass[0]))
 
 
 def assert_dn_exists(con, dn):
-    if not con.exists(dn):
-        sys.exit('Operation failed: DN "{}" not found.'.format(dn))
+    try:
+        if not con.exists(dn):
+            fail('DN "{}" not found.'.format(dn))
+    except LDAPInvalidDnError:
+        fail('DN "{}" not found.'.format(dn))
+
+
+def abort(msg):
+    '''
+    Like a failure, but yellow text.
+    '''
+    if msg.strip == '':
+        msg = 'Operation aborted.'
+
+    sys.exit(fmt(msg, 'yellow'))
+
+
+def fail(msg):
+    '''
+    Print a failure message in big red text, and stop the program.
+    '''
+    if msg.strip() == '':
+        msg = 'Operation failed.'
+
+    sys.exit(fmt(msg, 'red'))
 
 
 def op_summary(success, result):
@@ -486,9 +514,14 @@ def op_summary(success, result):
     Summarize the failure of an operation if one occured.
     '''
     if success:
-        print('Success!')
+        print(fmt('Success!', 'green'))
     else:
-        print('Operation failed: {}.'.format(result['message']))
+        if result['message'] != '':
+            # any operation that fails *should* exit.
+            fail(result['message'])
+        else:
+            # fallback for cases with a description, but no error message
+            fail(result['description'])
 
 
 def op_summary_ezldap(result):
