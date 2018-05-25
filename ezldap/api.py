@@ -41,7 +41,7 @@ def supports_starttls(uri):
         con = ldap3.Connection(uri, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
         con.unbind()
         return True
-    except (LDAPStartTLSError, LDAPSocketReceiveError, LDAPSessionTerminatedByServerError):
+    except LDAPStartTLSError:
         return False
 
 
@@ -55,7 +55,8 @@ def auto_bind(conf=None):
     if conf['binddn'] is not None and conf['bindpw'] is None:
         conf['bindpw'] = getpass.getpass('Enter bind DN password...')
 
-    return Connection(conf['host'], user=conf['binddn'], password=conf['bindpw'])
+    return Connection(conf['host'], user=conf['binddn'],
+        password=conf['bindpw'], conf=conf)
 
 
 def dn_address(dn):
@@ -75,7 +76,7 @@ def clean_uri(uri):
     '''
     ldap3 really struggles with URIs ending in a slash.
     '''
-    uri = re.sub(r'///', '//localhost', uri)
+    uri = re.sub(r'///', '//localhost', uri.strip())
     return re.sub(r'/$', '', uri)
 
 
@@ -85,13 +86,28 @@ class Connection(ldap3.Connection):
     Used to make pyldap's LDAPObject even easier to use.
     To automatically create a binding use auto_bind() instead.
     '''
-    def __init__(self, host, user=None, password=None, authentication=ldap3.SIMPLE):
+
+    def __init__(self, host, user=None, password=None, conf=None,
+        authentication=ldap3.SIMPLE):
+        '''
+        Create a new LDAP connection and bind. If either user or password are
+        omitted, the bind is anonymous. conf is a dictionary with any
+        placeholders or key/value combinations that you wish to be passed to
+        ldif templates or details like user/group OUs.
+        '''
         if host is None:
             raise ValueError('LDAP host cannot be None.')
 
+        if conf is None:
+            conf = config()
+
+        # delete bind credentials from config, don't want those after binding
+        conf.pop('binddn', None)
+        conf.pop('bindpw', None)
+        self.conf = conf
+
         # for whatever reason, ldap3 can't deal with ldap:/// identifiers
         host = clean_uri(host)
-
         self.server = ldap3.Server(host, get_info=ldap3.ALL)
         if supports_starttls(host):
             auto_bind_mode = ldap3.AUTO_BIND_TLS_BEFORE_BIND
@@ -100,7 +116,7 @@ class Connection(ldap3.Connection):
                 'proceeding without...', file=sys.stderr)
             auto_bind_mode = ldap3.AUTO_BIND_NO_TLS
 
-        if user is None:
+        if user is None or password is None:
             # anonymous bind
             super().__init__(self.server, auto_bind=auto_bind_mode)
         else:
@@ -255,13 +271,23 @@ class Connection(ldap3.Connection):
         return self.next_uidn(search_filter, search_base, gid_start, gid_attribute)
 
 
+    def _conf_basedn_key(self, key):
+        '''
+        A helper to fetch basedn values for several search functions.
+        '''
+        try:
+            return self.conf[key]
+        except KeyError:
+            return self.base_dn()
+
+
     def get_user(self, user, basedn=None, index='uid'):
         '''
         Return given user as a dict or None if none is found. Searches entire
         directory if no base search dn given.
         '''
         if basedn is None:
-            basedn = self.base_dn()
+            basedn = self._conf_basedn_key('peopledn')
 
         try:
             return self.search_list('({}={})'.format(index, user), search_base=basedn)[0]
@@ -273,6 +299,9 @@ class Connection(ldap3.Connection):
         '''
         Return a given group. Searches entire directory if no base search dn given.
         '''
+        if basedn is None:
+            basedn = self._conf_basedn_key('groupdn')
+
         return self.get_user(group, basedn=basedn, index=index)
 
 
@@ -280,6 +309,9 @@ class Connection(ldap3.Connection):
         '''
         Return a given host. Searches entire directory if no base search dn given.
         '''
+        if basedn is None:
+            basedn = self._conf_basedn_key('hostsdn')
+
         return self.get_user(host, basedn=basedn, index=index)
 
 
@@ -323,6 +355,8 @@ class Connection(ldap3.Connection):
         if replace_with is None:
             self.modify(dn, {attrib: [(ldap3.MODIFY_REPLACE, [value] )] })
         else:
+            # Delete then add seems to be the way to replace a specific value
+            # using ldap3.
             self.modify_delete(dn, attrib, value)
             self.modify_add(dn, attrib, replace_with)
 
@@ -353,42 +387,32 @@ class Connection(ldap3.Connection):
         return self.result
 
 
-    def add_group(self, groupname, conf=None,
+    def add_group(self, groupname,
         ldif_path='~/.ezldap/add_group.ldif', **kwargs):
         """
         Adds a group from an LDIF template.
         """
         replace = {'groupname': groupname, 'gid': self.next_gidn()}
-
-        if conf is None:
-            conf = config()
-
-        replace.update(conf)
+        replace.update(self.conf)
         replace.update(kwargs)
-
         ldif = ldif_read(ldif_path, replace)
         return self.ldif_add(ldif)
 
 
-    def add_to_group(self, username, groupname, conf=None,
+    def add_to_group(self, username, groupname,
         ldif_path='~/.ezldap/add_to_group.ldif', **kwargs):
         """
         Adds a user to a group.
         The user and group in question must already exist.
         """
         replace = {'username': username, 'groupname': groupname}
-
-        if conf is None:
-            conf = config()
-
-        replace.update(conf)
+        replace.update(self.conf)
         replace.update(kwargs)
-
         ldif = ldif_read(ldif_path, replace)
         return self.ldif_modify(ldif)
 
 
-    def add_user(self, username, groupname, password, conf=None,
+    def add_user(self, username, groupname, password,
         ldif_path='~/.ezldap/add_user.ldif', **kwargs):
         '''
         Adds a user. Does not create or modify groups.
@@ -399,10 +423,7 @@ class Connection(ldap3.Connection):
                    'uid': self.next_uidn(),
                    'gid': None}
 
-        if conf is None:
-            conf = config()
-
-        replace.update(conf)
+        replace.update(self.conf)
         replace.update(kwargs)
         if replace['gid'] is None:
             try:
@@ -414,7 +435,7 @@ class Connection(ldap3.Connection):
         return self.ldif_add(ldif)
 
 
-    def add_host(self, hostname, ip_address, conf=None,
+    def add_host(self, hostname, ip_address,
         ldif_path='~/.ezldap/add_host.ldif', **kwargs):
         '''
         Add a host to a directory. Hostname is the short hostname (hostname -s),
@@ -425,11 +446,7 @@ class Connection(ldap3.Connection):
         replace = {'hostname': hostname,
                    'ip': str(ipaddress.ip_address(ip_address)),
                    'hostname_fq': hostname + '.' + dn_address(self.base_dn())}
-
-        if conf is None:
-            conf = config()
-
-        replace.update(conf)
+        replace.update(self.conf)
         replace.update(kwargs)
         ldif = ldif_read(ldif_path, replace)
         return self.ldif_add(ldif)

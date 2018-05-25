@@ -4,7 +4,6 @@ Test the ezldap CLI and ensure it works properly.
 
 import re
 import subprocess
-import pytest
 import ezldap
 
 PREFIX = 'ezldap/templates/'
@@ -24,7 +23,7 @@ def syscall(call):
 
 
 def cli(call):
-    return syscall('EZLDAP_CONFIG=tests/ezldap_config.yml ezldap ' + call)
+    return syscall('EZLDAP_CONFIG=tests/openldap_config.yml ezldap ' + call)
 
 
 def add_testuser(username):

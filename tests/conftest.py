@@ -3,7 +3,6 @@ Shared fixtures for multiple test modules.
 (pytest autodetects this from its filename.)
 '''
 
-import subprocess
 import pytest
 import ezldap
 
@@ -15,7 +14,7 @@ def ping_slapd():
 
 @pytest.fixture(scope='session')
 def config():
-    return ezldap.config('tests/ezldap_config.yml')
+    return ezldap.config('tests/openldap_config.yml')
 
 
 @pytest.fixture(scope='session')
