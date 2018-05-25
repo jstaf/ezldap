@@ -51,6 +51,14 @@ def test_anon_bind(anon):
     assert len(anon.search_list('(objectClass=applicationProcess)')) == 0
 
 
+def test_no_cred_carryover(slapd):
+    '''
+    Make sure bindpw and binddn aren't passed to LDIF templates unintentionally.
+    '''
+    assert 'bindpw' not in slapd.conf.keys()
+    assert 'binddn' not in slapd.conf.keys()
+
+
 def test_base_dn(slapd):
     '''
     Do we retrieve the correct base dn?
