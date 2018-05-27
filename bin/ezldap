@@ -8,7 +8,8 @@ import pkg_resources
 import re
 
 import ldap3
-from ldap3.core.exceptions import LDAPSocketOpenError, LDAPInvalidDnError, LDAPBindError
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPInvalidDnError, \
+    LDAPBindError, LDAPInvalidFilterError
 import yaml
 import ezldap
 from ezldap.terminal import fmt
@@ -451,7 +452,10 @@ def interactive_conf(prompt, default=None):
 def search(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
-        ezldap.ldif_print(con.search_list(search_filter=argv.filter[0]))
+        try:
+            ezldap.ldif_print(con.search_list(search_filter=argv.filter[0]))
+        except LDAPInvalidFilterError:
+            fail('Invalid LDAP filter.')
 
 
 def search_dn(argv):
