@@ -24,8 +24,10 @@ def ping(uri):
     an anonymous bind.
     '''
     try:
-        with Connection(uri):
-            return True
+        uri = clean_uri(uri)
+        con = ldap3.Connection(uri, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
+        con.unbind()
+        return True
     except (LDAPSocketOpenError, LDAPSessionTerminatedByServerError,
         LDAPSocketReceiveError):
         return False
