@@ -56,6 +56,15 @@ def test_search(slapd):
     assert 'dn: ou=People,dc=ezldap,dc=io' in stdout
 
 
+def test_search_no_paren(slapd):
+    '''
+    Does the search CLI successfully spit out a nice LDIF?
+    '''
+    stdout = cli('search objectClass=organizationalUnit')
+    assert 'dn: ou=Group,dc=ezldap,dc=io' in stdout
+    assert 'dn: ou=People,dc=ezldap,dc=io' in stdout
+
+
 def test_search_dn(slapd):
     stdout = cli('search_dn Manager')
     assert 'cn=Manager,dc=ezldap,dc=io' in stdout

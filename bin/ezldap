@@ -450,10 +450,20 @@ def interactive_conf(prompt, default=None):
 
 
 def search(argv):
+    # Make command always wrap searches in parentheses for convenience
+    # i.e. cn=someuser is 4 less characters than '(cn=someuser)',
+    # and more closely mimics ldapsearch's behavior
+    search_filter = argv.filter[0].strip()
+    if search_filter[0] != '(':
+        search_filter = '(' + search_filter
+
+    if search_filter[-1] != ')':
+        search_filter = search_filter + ')'
+
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
         try:
-            ezldap.ldif_print(con.search_list(search_filter=argv.filter[0]))
+            ezldap.ldif_print(con.search_list(search_filter=search_filter))
         except LDAPInvalidFilterError:
             fail('Invalid LDAP filter.')
 
