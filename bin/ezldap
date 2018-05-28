@@ -198,7 +198,37 @@ def main():
         help='objectClass to investigate.')
     class_info_parser.set_defaults(func=class_info)
 
-    argv = parser.parse_args()
+    # allow using extra "--key=value"-style args not explicitly defined, and
+    # pack them into argv.replacements as a string dict
+    argv, argv_undefined = parser.parse_known_args()
+    argv.replacements = {}
+    next_key = None
+    for extra in argv_undefined:
+        if next_key is not None:
+            # handle value of a '--key value' argument
+            # This must come before other if statements or a subsequent key
+            # might be ignored
+            argv.replacements[next_key] = extra
+            next_key = None
+        elif extra[:2] == '--' and '=' in extra:
+            # handle a fully defined '--key=value' argument
+            unpacked = extra[2:].split('=')
+            argv.replacements[unpacked[0]] = '='.join(unpacked[1:])
+            next_key = None
+        elif extra[:2] == '--':
+            # handle key of a '--key value' argument
+            if next_key is not None:
+                print('Warning - argument --{} has no value and will be ignored.'
+                    'Use the format "--key=value" to specify additional arugments'
+                    'to ezldap.'.format(next_key), file=sys.stderr)
+
+            next_key = extra[2:]
+        else:
+            # Anything not falling into '--key=value' or '--key value' format
+            # is an invalid argument and triggers program exit.
+            fail('Unrecognized argument: "{}"'.format(extra))
+
+    # bind to directory and perform subparser function
     try:
         argv.func(argv)
     except LDAPSocketOpenError:
@@ -422,6 +452,7 @@ def config(argv):
     for k, v in prompts.items():
         conf[k] = interactive_conf(v, conf[k])
 
+    print(fmt('Writing configs to ~/.ezldap/', 'green'))
     os.makedirs(os.path.expanduser('~/.ezldap'), mode=0o700, exist_ok=True)
     yaml.dump(conf,
         stream=open(os.path.expanduser('~/.ezldap/config.yml'), 'w'),
