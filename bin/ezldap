@@ -223,7 +223,7 @@ def main():
             argv.replacements[unpacked[0]] = '='.join(unpacked[1:])
         elif extra[:2] == '--':
             # handle key of a '--key value' argument
-            fail('argument --{} has no value. Use the format "--key=value" to '
+            fail('argument "--{}" has no value. Use the format "--key=value" to '
                 'specify additional arugments to ezldap.'.format(extra[2:]))
         else:
             # Anything not falling into '--key=value' or '--key value' format
