@@ -116,6 +116,13 @@ def main():
         help='Path of LDIF template to use when performing this operation.')
     add_host_parser.set_defaults(func=add_host)
 
+    add_ldif_desc = 'Add a generic LDIF to a directory. Supports templating.'
+    add_ldif_parser = subparsers.add_parser('add_ldif',
+        description=add_ldif_desc, help=add_ldif_desc)
+    add_ldif_parser.add_argument('ldif', nargs=1, type=str,
+        help='LDIF file to use as template.')
+    add_ldif_parser.set_defaults(func=add_ldif)
+
     modify_desc = 'Add, replace, or delete an attribute from an entity.'
     modify_parser = subparsers.add_parser('modify',
         help=modify_desc, description=modify_desc)
@@ -132,6 +139,13 @@ def main():
     modify_parser.add_argument('replace_with', nargs='?', type=str, default=None,
         help='Value to replace an attribute with when performing a replace operation.')
     modify_parser.set_defaults(func=modify)
+
+    modify_ldif_desc = 'Modify an entry using an LDIF template.'
+    modify_ldif_parser = subparsers.add_parser('modify_ldif',
+        description=modify_ldif_desc, help=modify_ldif_desc)
+    modify_ldif_parser.add_argument('ldif', nargs=1, type=str,
+        help='LDIF file to use as template.')
+    modify_ldif_parser.set_defaults(func=modify_ldif)
 
     modify_dn_desc = 'Rename the DN of and/or move an entry.'
     modify_dn_parser = subparsers.add_parser('modify_dn', help=modify_dn_desc,
@@ -291,6 +305,13 @@ def add_host(argv):
         op_summary_ldif_add(res)
 
 
+def add_ldif(argv):
+    with ezldap.auto_bind(server_info=False) as con:
+        replacements = con.config
+        replacements.update(argv.replacements)
+        con.ldif_add(argv.ldif[0], replacements)
+
+
 def modify(argv):
     op = argv.operation[0]
     dn = argv.dn[0]
@@ -314,6 +335,13 @@ def modify(argv):
             fail('Unrecognized command.')
 
         op_summary_ezldap(res)
+
+
+def modify_ldif(argv):
+    with ezldap.auto_bind(server_info=False) as con:
+        replacements = con.config
+        replacements.update(argv.replacements)
+        con.ldif_modify(argv.ldif[0], replacements)
 
 
 def separate_dn(dn):
