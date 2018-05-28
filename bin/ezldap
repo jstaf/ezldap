@@ -202,27 +202,15 @@ def main():
     # pack them into argv.replacements as a string dict
     argv, argv_undefined = parser.parse_known_args()
     argv.replacements = {}
-    next_key = None
     for extra in argv_undefined:
-        if next_key is not None:
-            # handle value of a '--key value' argument
-            # This must come before other if statements or a subsequent key
-            # might be ignored
-            argv.replacements[next_key] = extra
-            next_key = None
-        elif extra[:2] == '--' and '=' in extra:
+        if extra[:2] == '--' and '=' in extra:
             # handle a fully defined '--key=value' argument
             unpacked = extra[2:].split('=')
             argv.replacements[unpacked[0]] = '='.join(unpacked[1:])
-            next_key = None
         elif extra[:2] == '--':
             # handle key of a '--key value' argument
-            if next_key is not None:
-                print('Warning - argument --{} has no value and will be ignored.'
-                    'Use the format "--key=value" to specify additional arugments'
-                    'to ezldap.'.format(next_key), file=sys.stderr)
-
-            next_key = extra[2:]
+            fail('argument --{} has no value. Use the format "--key=value" to '
+                'specify additional arugments to ezldap.'.format(extra[2:]))
         else:
             # Anything not falling into '--key=value' or '--key value' format
             # is an invalid argument and triggers program exit.
@@ -243,13 +231,15 @@ def add_group(argv):
         if gid is None:
             gid = con.next_gidn()
 
-        res = con.add_group(argv.groupname[0], gid=gid, ldif_path=argv.ldif[0])
+        res = con.add_group(argv.groupname[0], gid=gid, ldif_path=argv.ldif[0],
+            **argv.replacements)
         op_summary_ldif_add(res)
 
 
 def add_to_group(argv):
     with ezldap.auto_bind() as con:
-        res = con.add_to_group(argv.username[0], argv.groupname[0], ldif_path=argv.ldif[0])
+        res = con.add_to_group(argv.username[0], argv.groupname[0],
+            ldif_path=argv.ldif[0], **argv.replacements)
         op_summary_ldif_add(res)
 
 
@@ -264,18 +254,21 @@ def add_user(argv):
             group = user
             if con.get_group(group) is None:
                 print('Creating LDAP group {}... '.format(group), end='')
-                res = con.add_group(group, ldif_path=argv.ldif_group[0])
+                res = con.add_group(group, ldif_path=argv.ldif_group[0],
+                    **argv.replacements)
                 op_summary(res[0]['result'] == 0, res[0])
         elif con.get_group(group) is None:
             fail('Group does not exist.')
 
         print('Creating user {}... '.format(user), end='')
         passwd = ezldap.random_passwd()
-        res = con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0])
+        res = con.add_user(user, group, passwd, ldif_path=argv.ldif_user[0],
+            **argv.replacements)
         op_summary_ldif_add(res)
 
         print('Adding {} to LDAP group {}... '.format(user, group), end='')
-        res = con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0])
+        res = con.add_to_group(user, group, ldif_path=argv.ldif_add_to_group[0],
+            **argv.replacements)
         op_summary_ldif_add(res)
 
         print('Password: {}'.format(passwd))
@@ -294,7 +287,7 @@ def add_host(argv):
             fq_name = hostname
 
         res = con.add_host(short_name, argv.ip_address[0], hostname_fq=fq_name,
-            ldif_path=argv.ldif[0])
+            ldif_path=argv.ldif[0], **argv.replacements)
         op_summary_ldif_add(res)
 
 

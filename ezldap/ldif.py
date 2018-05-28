@@ -32,7 +32,8 @@ def template(path, replacements=None):
             content = Template(open(path).read())
             return content.substitute(replacements)
         except KeyError as e:
-            raise LDIFTemplateError('No value provided for LDIF key "{}"'.format(e.args[0]))
+            raise LDIFTemplateError('No value provided for LDIF key "{}"'
+                .format(e.args[0])) from None
 
 
 def ldif_read(path, replacements=None):

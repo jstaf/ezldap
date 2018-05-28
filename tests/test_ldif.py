@@ -3,8 +3,6 @@ Ensure that the LDIF templating is working correctly.
 '''
 
 import pytest
-from io import StringIO
-
 import ldap3
 from ezldap import ldif_read
 

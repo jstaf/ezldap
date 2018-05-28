@@ -148,6 +148,45 @@ def test_add_host_fq(slapd):
     assert '244.1.2.4' in host['ipHostNumber']
 
 
+def test_add_arbitrary_key(slapd):
+    '''
+    Test both "--key value" and "--key=value" syntax for arbitrary arguments
+    added by the user.
+    '''
+    cli('add_user '
+        '--ldif-user tests/ldif/test_add_user_extra_keys.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
+        '--email=some.email@somewhere.com '
+        '--fname=first --lname=last '
+        'arb_keys_user'.format(PREFIX, PREFIX))
+
+    user = slapd.get_user('arb_keys_user')
+    assert user['mail'][0] == 'some.email@somewhere.com'
+    assert user['gecos'][0] == 'first last'
+    assert user['givenName'][0] == 'first'
+    assert user['sn'][0] == 'last'
+
+    # parsing can go weird depending on where positional arguments are, so
+    # lets check that too
+    cli('add_user other_arb_user '
+        '--ldif-user tests/ldif/test_add_user_extra_keys.ldif '
+        '--ldif-group {}/add_group.ldif '
+        '--ldif-add-to-group {}/add_to_group.ldif '
+        '--email=some.email@somewhere.com '
+        '--fname=first --lname=last '.format(PREFIX, PREFIX))
+    assert slapd.get_user('other_arb_user') is not None
+
+
+def test_add_arbitrary_key_fail(slapd):
+    '''
+    Do lone keys properly fail?
+    '''
+    with pytest.raises(subprocess.SubprocessError) as e:
+        cli('add_group --ldif {}/add_group.ldif --ignoreme {}'.format(PREFIX, 'arb_key_ignored'))
+        assert 'will be ignored' in e.value
+
+
 def test_change_home(slapd):
     username = 'cli_change_home'
     add_testuser(username)
