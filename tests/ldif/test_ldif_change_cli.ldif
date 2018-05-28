@@ -1,0 +1,13 @@
+dn: uid=shrek,ou=People,dc=ezldap,dc=io
+changetype: modify
+add: mail
+mail: test1@ezldap.io
+mail: test2@ezldap.io
+-
+replace: cn
+cn: New name
+-
+delete: shadowLastChange
+-
+delete: gecos
+gecos: shrek

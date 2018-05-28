@@ -285,6 +285,34 @@ def test_modify_dn_complete(slapd):
     assert slapd.exists('cn=complete,ou=People,dc=ezldap,dc=io')
 
 
+def test_add_ldif(slapd):
+    cli('add_ldif tests/ldif/test_ldif_add_cli.ldif')
+    assert slapd.exists('uid=someuser,ou=People,dc=ezldap,dc=io')
+    assert slapd.exists('cn=somegroup,ou=Group,dc=ezldap,dc=io')
+    cli('add_ldif tests/ldif/test_ldif_add_cli_replace.ldif --username_cli=work_tyvm')
+    assert slapd.exists('uid=work_tyvm,ou=People,dc=ezldap,dc=io')
+    assert slapd.exists('cn=work_tyvm,ou=Group,dc=ezldap,dc=io')
+
+
+def test_modify_ldif(slapd):
+    add_testuser('shrek')
+    ezldap.ldif_print([slapd.get_user('shrek')])
+    cli('modify_ldif tests/ldif/test_ldif_change_cli.ldif')
+    user = slapd.get_user('shrek')
+    assert 'test1@ezldap.io' in user['mail']
+    assert 'test2@ezldap.io' in user['mail']
+    assert 'shadowLastChange' not in user.keys()
+    assert 'gecos' not in user.keys()
+    assert user['cn'][0] == 'New name'
+
+
+def test_bind_info(slapd):
+    stdout = cli('bind_info')
+    assert 'user: cn=Manager,dc=ezldap,dc=io' in stdout
+    stdout = cli('bind_info -a')
+    assert 'user: None' in stdout
+
+
 def test_server_info(slapd):
     stdout = cli('server_info')
     assert 'dc=ezldap,dc=io' in stdout
@@ -294,6 +322,12 @@ def test_server_info(slapd):
 def test_class_info(slapd):
     stdout = cli('class_info inetOrgPerson')
     assert 'Internet Organizational Person' in stdout
+    assert '2.5.6.0' in stdout  # make sure we fetched all the way to top
+
+    stdout = cli('class_info inetOrgPerson --no-superior')
+    assert 'Internet Organizational Person' in stdout
+    assert '2.5.6.0' not in stdout  # make sure we fetched all the way to top
+
     with pytest.raises(subprocess.SubprocessError) as err:
         stdout = cli('class_info asdf')
         assert 'not found' in err.value

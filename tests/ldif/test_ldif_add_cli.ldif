@@ -1,0 +1,22 @@
+dn: uid=someuser_cli,ou=People,dc=ezldap,dc=io
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+uid: someuser_cli
+uidNumber: 12346
+gidNumber: 12346
+cn: someuser_cli
+sn: someuser_cli
+mail: someuser_cli@ezldap.io
+shadowMax: 180
+shadowLastChange: 0
+shadowWarning: 7
+homeDirectory: /home/someuser_cli
+
+# dont add this comment
+dn: cn=somegroup_cli,ou=Group,dc=ezldap,dc=io
+objectClass: top
+objectClass: posixGroup
+cn: somegroup_cli
+gidNumber: 12345
+memberUid: someuser_cli

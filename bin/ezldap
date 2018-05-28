@@ -323,9 +323,11 @@ def add_host(argv):
 
 def add_ldif(argv):
     with ezldap.auto_bind(server_info=False) as con:
-        replacements = con.config
+        replacements = con.conf
         replacements.update(argv.replacements)
-        con.ldif_add(argv.ldif[0], replacements)
+        ldif = ezldap.ldif_read(argv.ldif[0], replacements)
+        res = con.ldif_add(ldif)
+        op_summary_ldif_add(res)
 
 
 def modify(argv):
@@ -355,9 +357,11 @@ def modify(argv):
 
 def modify_ldif(argv):
     with ezldap.auto_bind(server_info=False) as con:
-        replacements = con.config
+        replacements = con.conf
         replacements.update(argv.replacements)
-        con.ldif_modify(argv.ldif[0], replacements)
+        ldif = ezldap.ldif_read(argv.ldif[0], replacements)
+        res = con.ldif_modify(ldif)
+        op_summary_ldif_add(res)
 
 
 def separate_dn(dn):
