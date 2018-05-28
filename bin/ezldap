@@ -210,6 +210,10 @@ def main():
         help=class_info_desc, description=class_info_desc)
     class_info_parser.add_argument('objectClass', nargs=1, type=str,
         help='objectClass to investigate.')
+    class_info_parser.add_argument('-n', '--no-superior',
+        default=False, const=True, action='store_const',
+        help='Do not display superior class info from what this objectClass is '
+        'derived from.')
     class_info_parser.set_defaults(func=class_info)
 
     # allow using extra "--key=value"-style args not explicitly defined, and
@@ -543,7 +547,17 @@ def class_info(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
         try:
-            print(con.server.schema.object_classes[argv.objectClass[0]])
+            object_class = con.server.schema.object_classes[argv.objectClass[0]]
+            class_list = [object_class]
+            if not argv.no_superior:
+                # fetch all superior classes in the chain and add them too
+                while object_class.superior is not None:
+                    object_class = con.server.schema.object_classes[object_class.superior[0]]
+                    class_list.append(object_class)
+
+            for class_ in class_list:
+                print(class_)
+
         except KeyError:
             fail('objectClass "{}" not found.'.format(argv.objectClass[0]))
 
