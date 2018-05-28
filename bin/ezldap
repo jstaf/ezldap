@@ -237,6 +237,8 @@ def main():
         fail('Could not reach LDAP server at {}'.format(ezldap.config()['host']))
     except LDAPBindError:
         fail('Bind failed: invalid credentials.')
+    except ezldap.LDIFTemplateError as e:
+        fail(e.args[0])
 
 
 def add_group(argv):
