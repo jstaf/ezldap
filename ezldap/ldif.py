@@ -11,6 +11,14 @@ from string import Template
 import ldap3
 
 
+class LDIFTemplateError(KeyError):
+    '''
+    A custom exception to better catch LDIF template errors specifcally instead
+    of the ultra-vague KeyError.
+    '''
+    pass
+
+
 def template(path, replacements=None):
     '''
     Read a file and substitute replacment entries for placeholders designated
@@ -20,8 +28,11 @@ def template(path, replacements=None):
     if replacements is None:
         return open(path).read()
     else:
-        content = Template(open(path).read())
-        return content.substitute(replacements)
+        try:
+            content = Template(open(path).read())
+            return content.substitute(replacements)
+        except KeyError as e:
+            raise LDIFTemplateError('No value provided for LDIF key "{}"'.format(e.args[0]))
 
 
 def ldif_read(path, replacements=None):
