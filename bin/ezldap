@@ -116,7 +116,7 @@ def main():
         help='Path of LDIF template to use when performing this operation.')
     add_host_parser.set_defaults(func=add_host)
 
-    add_ldif_desc = 'Add a generic LDIF to a directory. Supports templating.'
+    add_ldif_desc = 'Add a generic LDIF template to a directory.'
     add_ldif_parser = subparsers.add_parser('add_ldif',
         description=add_ldif_desc, help=add_ldif_desc)
     add_ldif_parser.add_argument('ldif', nargs=1, type=str,
@@ -199,6 +199,16 @@ def main():
     check_pw_parser.add_argument('username', nargs=1, type=str,
         help='Username to check password for')
     check_pw_parser.set_defaults(func=check_pw)
+
+    bind_info_desc = "Print info about ezldap's connection to your server."
+    bind_info_parser = subparsers.add_parser('bind_info', help=bind_info_desc,
+        description=bind_info_desc + ' Note that "cleartext" refers to whether '
+        'a bind was performed using SSL (using an ldaps:// URI). '
+        'TLS will be started before binding if your server supports it.')
+    bind_info_parser.add_argument('-a', '--anonymous-bind',
+        default=False, const=True, action='store_const',
+        help='Show connection info for anonymous binds.')
+    bind_info_parser.set_defaults(func=bind_info)
 
     server_info_desc = 'Print information about the LDAP server you are using.'
     server_info_parser = subparsers.add_parser('server_info',
@@ -535,6 +545,15 @@ def search_dn(argv):
     for dn in query['dn']:
         if argv.keyword in dn:
             print(dn)
+
+
+def bind_info(argv):
+    if argv.anonymous_bind:
+        with ezldap.Connection(ezldap.config()['host']) as con:
+            print(con)
+    else:
+        with ezldap.auto_bind(server_info=False) as con:
+            print(con)
 
 
 def server_info(argv):
