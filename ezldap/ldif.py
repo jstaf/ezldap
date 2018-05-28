@@ -126,7 +126,7 @@ def ldif_print(entries):
     with StringIO() as strbuf:
         _entries_to_handle(entries, strbuf)
         strbuf.seek(0)
-        print(''.join(strbuf.readlines()))
+        print(''.join(strbuf.readlines()), end='')
 
 
 def _entries_to_handle(entries, handle):
