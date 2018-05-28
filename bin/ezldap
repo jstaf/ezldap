@@ -245,6 +245,7 @@ def main():
             fail('Unrecognized argument: "{}"'.format(extra))
 
     # bind to directory and perform subparser function
+    assert_config_exists()
     try:
         argv.func(argv)
     except LDAPSocketOpenError:
@@ -253,6 +254,21 @@ def main():
         fail('Bind failed: invalid credentials.')
     except ezldap.LDIFTemplateError as e:
         fail(e.args[0])
+
+
+def exists(path):
+    return os.path.exists(os.path.expanduser(path))
+
+
+def assert_config_exists():
+    try:
+        assert exists('~/.ezldap/config.yml')
+        assert exists('~/.ezldap/add_user.ldif')
+        assert exists('~/.ezldap/add_group.ldif')
+        assert exists('~/.ezldap/add_to_group.ldif')
+        assert exists('~/.ezldap/add_host.ldif')
+    except AssertionError:
+        fail('You must run "ezldap config" before using this script.')
 
 
 def add_group(argv):
