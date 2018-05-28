@@ -227,7 +227,7 @@ def main():
 
 def add_group(argv):
     gid = argv.gid
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         if gid is None:
             gid = con.next_gidn()
 
@@ -237,7 +237,7 @@ def add_group(argv):
 
 
 def add_to_group(argv):
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         res = con.add_to_group(argv.username[0], argv.groupname[0],
             ldif_path=argv.ldif[0], **argv.replacements)
         op_summary_ldif_add(res)
@@ -247,7 +247,7 @@ def add_user(argv):
     user = argv.username[0]
     group = argv.groupname
 
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         if group is None:
             # No group specified, perform a second check for groups named after
             # the user, then create it.
@@ -276,7 +276,7 @@ def add_user(argv):
 
 def add_host(argv):
     hostname = argv.hostname[0]
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         if '.' not in hostname:
             # we're working with the short hostname
             short_name = hostname
@@ -296,7 +296,7 @@ def modify(argv):
     dn = argv.dn[0]
     attrib = argv.attribute[0]
     value = argv.value[0]
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         assert_dn_exists(con, dn)
 
         if op == 'add':
@@ -331,7 +331,7 @@ def modify_dn(argv):
     if dn == new_dn:
         fail('DNs are the same.')
 
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         assert_dn_exists(con, dn)
 
         if relative_old != relative_new:
@@ -349,7 +349,7 @@ def modify_dn(argv):
 
 def delete(argv):
     dn = argv.dn[0]
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         assert_dn_exists(con, dn)
         if not argv.force:
             query = con.search_list(search_base=dn, search_scope=ldap3.BASE)
@@ -364,7 +364,7 @@ def delete(argv):
 
 
 def change_home(argv):
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         try:
             dn = con.get_user(argv.username[0])['dn'][0]
         except TypeError:
@@ -375,7 +375,7 @@ def change_home(argv):
 
 
 def change_shell(argv):
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         try:
             dn = con.get_user(argv.username[0])['dn'][0]
         except TypeError:
@@ -395,7 +395,7 @@ def change_pw(argv):
     else:
         passwd = ezldap.random_passwd()
 
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         try:
             dn = con.get_user(user)['dn'][0]
         except TypeError:
@@ -409,7 +409,7 @@ def change_pw(argv):
 
 
 def check_pw(argv):
-    with ezldap.auto_bind() as con:
+    with ezldap.auto_bind(server_info=False) as con:
         query = con.get_user(argv.username[0])
         if query is None:
             fail('User not found.')

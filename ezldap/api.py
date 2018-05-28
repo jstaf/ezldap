@@ -48,7 +48,7 @@ def supports_starttls(uri):
         return False
 
 
-def auto_bind(conf=None):
+def auto_bind(conf=None, server_info=True):
     '''
     Automatically detects LDAP config values and returns a directory binding.
     '''
@@ -91,7 +91,7 @@ class Connection(ldap3.Connection):
     '''
 
     def __init__(self, host, user=None, password=None, conf=None,
-        authentication=ldap3.SIMPLE):
+        authentication=ldap3.SIMPLE, server_info=True):
         '''
         Create a new LDAP connection and bind. If either user or password are
         omitted, the bind is anonymous. conf is a dictionary with any
@@ -111,7 +111,11 @@ class Connection(ldap3.Connection):
 
         # for whatever reason, ldap3 can't deal with ldap:/// identifiers
         host = clean_uri(host)
-        self.server = ldap3.Server(host, get_info=ldap3.ALL)
+        if server_info:
+            self.server = ldap3.Server(host, get_info=ldap3.ALL)
+        else:
+            self.server = ldap3.Server(host, get_info=ldap3.NONE)
+
         if supports_starttls(host):
             auto_bind_mode = ldap3.AUTO_BIND_TLS_BEFORE_BIND
         else:
