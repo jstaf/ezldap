@@ -245,7 +245,7 @@ def main():
             fail('Unrecognized argument: "{}"'.format(extra))
 
     # force users to configure package
-    if argv.func is not config and 'EZLDAP_CONFIG' not in os.environ:
+    if argv.func not in [config, help_msg] and 'EZLDAP_CONFIG' not in os.environ:
         assert_config_exists()
 
     # bind to directory and perform subparser function
@@ -509,11 +509,11 @@ def config(argv):
     }
 
     print('Configuring ezldap...')
-    print('Default values are in [brackets] - to accept, press Enter.')
+    print('Default values are in [brackets] - to accept, press Enter.\n')
     for k, v in prompts.items():
         conf[k] = interactive_conf(v, conf[k])
 
-    print(fmt('Writing configs to ~/.ezldap/', 'green'))
+    print(fmt('\nWriting configs to ~/.ezldap/', 'green'))
     os.makedirs(os.path.expanduser('~/.ezldap'), mode=0o700, exist_ok=True)
     yaml.dump(conf,
         stream=open(os.path.expanduser('~/.ezldap/config.yml'), 'w'),
@@ -524,6 +524,9 @@ def config(argv):
             content = pkg_resources.resource_string('ezldap', 'templates/' + template).decode()
             with open(os.path.expanduser('~/.ezldap/' + template), 'w') as fout:
                 fout.write(content)
+
+    print(fmt("Edit config.yaml and the LDIF templates in ~/.ezldap/ to "
+        "configure ezldap's behavior.", 'green'))
 
 
 def interactive_conf(prompt, default=None):
