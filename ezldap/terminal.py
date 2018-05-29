@@ -25,7 +25,7 @@ def fmt(text, color='white', bold=False, underline=False):
     return ANSI_ESCAPE[color] + text + ANSI_ESCAPE['end']
 
 
-def ansi_demo():
+def _ansi_demo():
     print(fmt('purple', color='purple'))
     print(fmt('blue', color='blue'))
     print(fmt('green', color='green'))
