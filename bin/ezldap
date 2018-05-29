@@ -245,7 +245,7 @@ def main():
             fail('Unrecognized argument: "{}"'.format(extra))
 
     # force users to configure package
-    if argv.func is not config:
+    if argv.func is not config and 'EZLDAP_CONFIG' not in os.environ:
         assert_config_exists()
 
     # bind to directory and perform subparser function
