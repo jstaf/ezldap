@@ -244,8 +244,11 @@ def main():
             # is an invalid argument and triggers program exit.
             fail('Unrecognized argument: "{}"'.format(extra))
 
+    # force users to configure package
+    if argv.func is not config:
+        assert_config_exists()
+
     # bind to directory and perform subparser function
-    assert_config_exists()
     try:
         argv.func(argv)
     except LDAPSocketOpenError:
@@ -505,6 +508,8 @@ def config(argv):
         'homedir': 'Default home directory for new users'
     }
 
+    print('Configuring ezldap...')
+    print('Default values are in [brackets] - to accept, press Enter.')
     for k, v in prompts.items():
         conf[k] = interactive_conf(v, conf[k])
 
@@ -526,9 +531,12 @@ def interactive_conf(prompt, default=None):
     Prompt the user for a config value, press ENTER for default val.
     '''
     if default is None:
-        val = input('{}: '.format(prompt))
+        val = input(fmt('{}: '.format(prompt), bold=True))
     else:
-        val = input('{} [{}]: '.format(prompt, default))
+        if 'None' in default:
+            default = re.sub(r'None', 'dc=example,dc=com', default)
+
+        val = input('{} [{}]: '.format(fmt(prompt, bold=True), default))
 
     if val == '':
         return default
