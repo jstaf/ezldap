@@ -2,6 +2,7 @@ ezldap
 ---------------------------------------------
 [![Build Status](https://travis-ci.org/jstaf/ezldap.svg?branch=master)](https://travis-ci.org/jstaf/ezldap)
 [![Coverage Status](https://coveralls.io/repos/github/jstaf/ezldap/badge.svg?branch=master)](https://coveralls.io/github/jstaf/ezldap?branch=master)
+[![PyPI version](https://badge.fury.io/py/ezldap.svg)](https://badge.fury.io/py/ezldap)
 
 An object-oriented Python LDAP API and set of bundled scripts to make
 common LDAP tasks easier.
@@ -42,7 +43,7 @@ with ezldap.auto_bind() as con:
 ezldap add_user username groupname
 ```
 
-## installation
+## Installation
 
 You'll need a copy of Python 3.4+.
 No other dependencies are necessary,
@@ -61,7 +62,7 @@ I do not recommend doing so, as it will be stored in cleartext.
 You may wish to configure the LDIF templates under `~/.ezldap`
 as well if you intend to use this package's add object functionality.
 
-## running tests
+## Running tests
 
 To run the tests, run the following after installation.
 You will need to have [Docker](https://www.docker.com/community-edition) installed -
@@ -72,7 +73,7 @@ pip3 install pytest pytest-cov pytest-docker docker-compose
 pytest
 ```
 
-## using this package
+## Using this package
 
 For command-line documentation and usage info,
 refer to the `ezldap` command's built-in documentation
@@ -82,3 +83,4 @@ Keep in mind this package is under active development and may not be appropriate
 Functionality is constantly being added, and the API should not yet be considered stable.
 
 For further documentation check out the [wiki](https://github.com/jstaf/ezldap/wiki)
+
