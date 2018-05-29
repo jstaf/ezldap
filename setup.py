@@ -1,4 +1,3 @@
-import glob
 from setuptools import setup
 
 # import version from version.py so it's only specified in one spot
@@ -17,6 +16,7 @@ setup(
     packages=['ezldap'],
     scripts=['bin/ezldap'],
     include_package_data=True,
+    zip_safe=False,
     install_requires=[
         'PyYAML',
         'ldap3'
@@ -29,5 +29,15 @@ setup(
         'pytest-cov',
         'docker-compose'
     ],
-    zip_safe=False
+    classifiers=[
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3 :: Only',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: Unix',
+        'Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP',
+        'License :: OSI Approved :: BSD License',
+        'Development Status :: 4 - Beta'
+    ]
 )
