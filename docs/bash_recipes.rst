@@ -505,7 +505,7 @@ Operations do not get performed half-way and leave things in a broken state.
 That said, I provide no guarantees or warranty of any kind while using this package.
 If you want to check that things are working correctly, run the tests!
 (You can also spin up a custom LDAP instance using a tool like Docker an test against that,
-you can use this package's [Dockerfile](https://github.com/jstaf/ezldap/blob/master/tests/Dockerfile) as a reference to build your own test instances.)
+you can use this package's `Dockerfile <https://github.com/jstaf/ezldap/blob/master/tests/Dockerfile>`_ as a reference to build your own test instances.)
 
 Example error:
 
