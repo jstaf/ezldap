@@ -56,6 +56,15 @@ def test_search(slapd):
     assert 'dn: ou=People,dc=ezldap,dc=io' in stdout
 
 
+def test_search_w_attributes(slapd):
+    '''
+    Test out search with attributes as well.
+    '''
+    stdout = cli('search ou=People ou')
+    assert 'People' in stdout
+    assert 'objectClass' not in stdout
+
+
 def test_search_no_paren(slapd):
     '''
     Does the search CLI successfully spit out a nice LDIF?

@@ -149,7 +149,9 @@ def _entries_to_handle(entries, handle):
     for entry in entries_cp:
         handle.writelines(_dump_attributes('dn', entry.pop('dn')))
         #TODO only works with ldif-add, needs the ability to handle ldif-change
-        handle.writelines(_dump_attributes('objectClass', entry.pop('objectClass')))
+        if 'objectClass' in entry.keys():
+            handle.writelines(_dump_attributes('objectClass', entry.pop('objectClass')))
+
         for k, v in entry.items():
             handle.writelines(_dump_attributes(k, v))
 

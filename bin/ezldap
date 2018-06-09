@@ -46,6 +46,9 @@ def main():
         'Example: "(objectClass=*)".')
     search_parser.add_argument('filter', nargs=1, type=str, default='(objectClass=*)',
         help='LDAP filter to search by, for example: (objectClass=*)')
+    search_parser.add_argument('attributes', nargs='*', type=str,
+        default=[ldap3.ALL_ATTRIBUTES],
+        help='Attributes to search. If not provided, all attributes will be returned.')
     search_parser.set_defaults(func=search)
 
     search_dn_parser = subparsers.add_parser('search_dn',
@@ -561,7 +564,8 @@ def search(argv):
     conf = ezldap.config()
     with ezldap.Connection(conf['host']) as con:
         try:
-            ezldap.ldif_print(con.search_list(search_filter=search_filter))
+            ezldap.ldif_print(con.search_list(search_filter=search_filter,
+                attributes=argv.attributes))
         except LDAPInvalidFilterError:
             fail('Invalid LDAP filter.')
 
