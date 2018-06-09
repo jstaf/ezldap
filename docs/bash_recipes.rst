@@ -50,7 +50,7 @@ Sample output: ::
 Get information about an objectClass
 ----------------------------------------
 
-No one remembers every possible for every attribute off the top of their head.
+No one remembers every possible attribute for every objectClass off the top of their head.
 For information about what a particular attributes an objectClass supports or
 requires, you can use ``class_info``. ``class_info`` will display all required
 and optional attributes for an objectClass, as well as all superior objectClasses
