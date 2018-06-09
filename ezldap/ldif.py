@@ -39,6 +39,10 @@ def template(path, replacements=None):
 def ldif_read(path, replacements=None):
     '''
     Read an LDIF file into a list of dicts appropriate for use with ezldap.
+
+    :param path: Path of an LDIF file to read.
+    :param replacements: A dictionary of replacement values to replace
+        $placeholders in the LDIF template.
     '''
     # read into a string buffer first
     path = os.path.expanduser(path)
@@ -114,6 +118,10 @@ def ldif_read(path, replacements=None):
 def ldif_write(entries, path):
     '''
     Write self.entries as LDIF file.
+
+    :param entries: A list of dicts, such as that returned by
+        Connection.search_list()
+    :param path: File to write.
     '''
     with open(os.path.expanduser(path), 'w') as handle:
         _entries_to_handle(entries, handle)
@@ -122,6 +130,9 @@ def ldif_write(entries, path):
 def ldif_print(entries):
     '''
     Print an LDIF entry to stdout.
+
+    :param entries: A list of dicts, such as that returned by
+        Connection.search_list().
     '''
     with StringIO() as strbuf:
         _entries_to_handle(entries, strbuf)
