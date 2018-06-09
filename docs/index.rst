@@ -39,12 +39,7 @@ Command-line example:
   # a password will be automatically generated
   ezldap add_user username groupname
 
-ezldap is designed to do two things well:
-
-* Provide a high-level Python API that makes scripting LDAP-related operations realllllyyy easy.
-
-* Provide a command-line interface that offers the same functionality as the Python API.
-  No one should need to know Python/Perl/etc. to be able to work with an LDAP directory to its fullest extent.
+For a quick tour of what ezldap can do, why not check out the package `walkthrough </tutorial.html>`_?
 
 .. toctree::
    :maxdepth: 3
