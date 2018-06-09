@@ -157,6 +157,7 @@ Verify the group has been created using ``ezldap search``
 (you can also use ``ldapsearch -x``, it won't hurt my feelings...)
 
 ::
+  
   ezldap search cn=demo
 
 ::
