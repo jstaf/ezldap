@@ -39,7 +39,7 @@ Command-line example:
   # a password will be automatically generated
   ezldap add_user username groupname
 
-For a quick tour of what ezldap can do, why not check out the package `walkthrough </tutorial.html>`_?
+For a quick tour of what ezldap can do, why not check out the package `walkthrough <tutorial.html>`_?
 
 .. toctree::
    :maxdepth: 3

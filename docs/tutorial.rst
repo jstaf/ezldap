@@ -99,8 +99,8 @@ Assuming you've reached this point, congratulations!
 You are now set to use ezldap.
 
 * To get started using the command-line LDAP client,
-  see the `Bash recipes </bash_recipes.html>`_ page, and run through the examples there.
+  see the `Bash recipes <bash_recipes.html>`_ page, and run through the examples there.
 
 * To get started with the Python API,
-  go to the `Python recipes </python_recipes.html>`_ page.
-  More detailed information can be found by reading the `Python API documentation </python_api.html>`_.
+  go to the `Python recipes <python_recipes.html>`_ page.
+  More detailed information can be found by reading the `Python API documentation <python_api.html>`_.
