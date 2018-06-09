@@ -12,6 +12,10 @@ Query an LDAP server
 Get information about your LDAP server
 ------------------------------------------
 
+Every LDAP server will supply information about itself once connected.
+To fetch identity information from your LDAP server, you can use the ``server_info``
+command:
+
 ::
 
   ezldap server_info
@@ -46,6 +50,13 @@ Sample output: ::
 Get information about an objectClass
 ----------------------------------------
 
+No one remembers every possible for every attribute off the top of their head.
+For information about what a particular attributes an objectClass supports or
+requires, you can use ``class_info``. ``class_info`` will display all required
+and optional attributes for an objectClass, as well as all superior objectClasses
+it inherits attributes from. (You can specifically look up the details for only
+the current objectClass with the ``-n``/``--no-superior`` option).
+
 ::
 
   ezldap class_info inetOrgPerson
@@ -63,10 +74,20 @@ Get information about an objectClass
       o, pager, photo, roomNumber, secretary, uid, userCertificate,
       x500uniqueIdentifier, preferredLanguage, userSMIMECertificate, userPKCS12
 
+  [more classes that inetOrgPerson is derived from follow...]
+
 Search using LDAP filters
 ----------------------------------------------------
 
-Search uses the same syntax as ``ldapsearch -x`` ::
+You can query an LDAP directory using ``search``.
+This will use the same syntax as ``ldapsearch``.
+For convenience, single filters do not need to be wrapped in parentheses
+(for example, ``(objectClass=*)`` can be represented with ``objectClass=*``).
+More complex queries should be wrapped in parentheses and quotes:
+``(&(cn=someuser)(objectClass=posixAccount))`` should be represented as
+``'(&(cn=someuser)(objectClass=posixAccount))'``.
+
+::
 
   ezldap search objectClass=organizationalUnit
 
@@ -102,6 +123,9 @@ This function finds any DNs in a directory tree matching a keyword.
 Add entries
 =========================================
 
+ezldap supports adding entries to a directory using a set of configurable
+LDIF templates in ``~/.ezldap``. Let's go through some example use cases.
+
 Add a group
 -------------------------
 
@@ -114,7 +138,7 @@ Add a group
   Success!
 
 Verify the group has been created using ``ezldap search``
-(you can also use ``ldapsearch -x``, it won't hurt my feelings...)
+(you can also use ``ldapsearch``, it won't hurt my feelings...)
 
 ::
 
@@ -131,7 +155,9 @@ Verify the group has been created using ``ezldap search``
 Add a group using an alternate LDIF template
 -------------------------------------------------
 
-Chances are, the default LDIFs provided in this package won't match your organization's needs. No problem - ezldap works off of templates you can customize to your needs.
+Chances are, the default LDIFs provided in this package won't match your
+organization's needs. No problem - ezldap works off of templates you can
+customize to your needs.
 Let's create a copy of the default ``add_group.ldif`` and use that instead:
 
 ::
