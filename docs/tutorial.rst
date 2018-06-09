@@ -50,11 +50,11 @@ To install ezldap, run the following:
 Now we will configure ezldap to connect to the OpenLDAP instance running on our
 demonstration Docker container. Run ``ezldap config``.
 You will be prompted for the following.
-I have provided example bind information here:
+I have provided the bind information for the container here:
 
 * **LDAP host:**  ldap:///
 * **Bind DN:** cn=Manager,dc=ezldap,dc=io
-* **Bind password:** password
+* **Bind password:** password (yes, it's "password")
 * **User base dn:** ou=People,dc=ezldap,dc=io
 * **Group base dn:** ou=Group,dc=ezldap,dc=io
 * **Host base dn:** ou=Hosts,dc=ezldap,dc=io
