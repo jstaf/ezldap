@@ -10,7 +10,10 @@ To install ezldap, just use pip:
   pip install ezldap
   ezldap config
 
-To install the development version from Github.
+Working with the development version
+-----------------------------------------------
+
+To install the development version from Github, use the following command:
 It is *highly* suggested to run the tests if you will be working with the development version.
 
 ::
