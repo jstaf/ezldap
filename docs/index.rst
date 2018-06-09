@@ -1,7 +1,3 @@
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
 ==================================
 ezldap - LDAP, but easier.
 ==================================
@@ -44,3 +40,12 @@ These are a set of "recipes" designed to demonstrate common use cases of this pa
 
 * :ref:`Bash recipes`
 * :ref:`Python recipes`
+
+.. toctree::
+   :maxdepth: 3
+   :Caption: Contents
+
+   index
+   bash_recipes
+   python_recipes
+   security
