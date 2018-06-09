@@ -401,6 +401,7 @@ Delete an object
 Maybe we realized that putting a group in the ``ou=People`` organizationalUnit
 was a bad idea.
 Maybe we just didn't want the ``new-name`` group anymore.
+Let's delete it.
 Note - since this is an inherently risky operation,
 you'll be prompted for confirmation before deleting anything
 (unless you use the ``-f``/``--force`` option).
@@ -469,33 +470,35 @@ refer to the ``ezldap`` client's command-line documentation
 
 ::
 
-  usage: ezldap [-h] [-v]  ...
+    usage: ezldap [-h] [-v]  ...
 
-  ezldap CLI - Perform various options on an LDAP directory.
+    ezldap CLI - Perform various options on an LDAP directory.
 
-  optional arguments:
-  -h, --help     show this help message and exit
-  -v, --version  show program's version number and exit
+    optional arguments:
+     -h, --help     show this help message and exit
+     -v, --version  show program's version number and exit
 
-  Valid commands:
+    Valid commands:
 
-    config        Configure ezldap (configs are stored in ~/.ezldap/).
-    search        Search for entities by LDAP filter.
-    search_dn     Search for and print DNs in a directory that match a keyword.
-    add_user      Add a user.
-    add_group     Add a group.
-    add_to_group  Add a user to a group.
-    add_host      Add a host.
-    modify        Add, replace, or delete an attribute from an entity.
-    modify_dn     Rename the DN of and/or move an entry.
-    delete        Delete an entry from an LDAP directory.
-    change_home   Change a user's home directory.
-    change_shell  Change a user's default shell.
-    change_pw     Change or reset a user's password.
-    check_pw      Check a user's password.
-    server_info   Print information about the LDAP server you are using.
-    class_info    Print information about a specific LDAP objectClass.
-
+      config        Configure ezldap (configs are stored in ~/.ezldap/).
+      search        Search for entities by LDAP filter.
+      search_dn     Search for and print DNs in a directory that match a keyword.
+      add_user      Add a user.
+      add_group     Add a group.
+      add_to_group  Add a user to a group.
+      add_host      Add a host.
+      add_ldif      Add a generic LDIF template to a directory.
+      modify        Add, replace, or delete an attribute from an entity.
+      modify_ldif   Modify an entry using an LDIF template.
+      modify_dn     Rename the DN of and/or move an entry.
+      delete        Delete an entry from an LDAP directory.
+      change_home   Change a user's home directory.
+      change_shell  Change a user's default shell.
+      change_pw     Change or reset a user's password.
+      check_pw      Check a user's password.
+      bind_info     Print info about ezldap's connection to your server.
+      server_info   Print information about the LDAP server you are using.
+      class_info    Print information about a specific LDAP objectClass.
 
 For help on a given command:
 
