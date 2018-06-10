@@ -479,19 +479,22 @@ def change_pw(argv):
 
 
 def check_pw(argv):
-    with ezldap.auto_bind(server_info=False) as con:
-        query = con.get_user(argv.username[0])
+    user = argv.username[0]
+
+    # make sure the user exists first
+    conf = ezldap.config()
+    with ezldap.Connection(conf['host'], server_info=False) as anon:
+        query = anon.get_user(user)
         if query is None:
-            fail('User not found.')
+            fail('User does not exist.')
 
-        ssha = query['userPassword'][0]
-
-    print('Enter password to verify...')
-    passwd = getpass.getpass()
-
-    if ezldap.ssha_check(ssha, passwd):
-        print(fmt('Passwords match!', 'green'))
-    else:
+    passwd = getpass.getpass('Enter password to verify...')
+    try:
+        # attempt a bind as the user, if successful, passwords match
+        with ezldap.Connection(conf['host'], user=query['dn'][0],
+                               password=passwd, server_info=False) as con:
+            print(fmt('Passwords match!', 'green'))
+    except LDAPBindError:
         fail("Passwords do not match.")
 
 
