@@ -33,7 +33,7 @@ def template(path, replacements=None):
             return content.substitute(replacements)
         except KeyError as e:
             raise LDIFTemplateError('No value provided for LDIF key "{}"'
-                .format(e.args[0])) from None
+                .format(e.args[0])) from e
 
 
 def ldif_read(path, replacements=None):
